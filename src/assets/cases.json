@@ -1,0 +1,24 @@
+{
+  "keyboards": ["quefrency", "sinc", "kbo-5000"],
+  "types": ["1", "2", "3", "g", "gx", "m"],
+  "data": [
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" },
+    { "imagePath": "/src/assets/testimg.jpg", "alt": "" }
+  ]
+}

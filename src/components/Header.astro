@@ -1,0 +1,31 @@
+---
+import json from "../assets/cases.json";
+const { types, keyboards } = json;
+---
+
+<header class="grid grid-cols-12 gap-2">
+  <section class="relative">
+    <p class="fixed font-bold">3DPKBD</p>
+  </section>
+  <section class="relative col-span-2 col-start-2">
+    <nav class="fixed flex flex-col items-start">
+      <a href="">Github</a>
+      <a href="">Instagram</a>
+      <a href="">Behance</a>
+    </nav>
+  </section>
+  {
+    keyboards.map((keyboard) => (
+      <section class="col-span-3 flex aspect-[2] flex-col">
+        <p>{keyboard}</p>
+        <nav>
+          {types.map((type) => (
+            <a href={`type${type}-${keyboard}`} class="mr-1">
+              {type}
+            </a>
+          ))}
+        </nav>
+      </section>
+    ))
+  }
+</header>

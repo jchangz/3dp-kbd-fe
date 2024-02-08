@@ -1,0 +1,23 @@
+---
+import json from "../assets/cases.json";
+const { types, keyboards } = json;
+---
+
+<footer class="grid grid-cols-12 gap-2 pb-40">
+  <section class="col-span-9 col-start-4 grid grid-cols-9 gap-2">
+    {
+      keyboards.map((keyboard) => (
+        <div class="col-span-3 flex aspect-[2] flex-col justify-end">
+          <p>{keyboard}</p>
+          <nav>
+            {types.map((type) => (
+              <a href={`type${type}-${keyboard}`} class="mr-1">
+                {type}
+              </a>
+            ))}
+          </nav>
+        </div>
+      ))
+    }
+  </section>
+</footer>
