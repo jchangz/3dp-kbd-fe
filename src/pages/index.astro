@@ -11,16 +11,18 @@ const { types, data } = json;
     <aside class="grid justify-end gap-2">
       {
         types.map((name) => (
-          <p class="flex w-[100px] items-center justify-center">type{name}</p>
+          <p class="flex w-[100px] items-center justify-center">
+            Type<span class="capitalize">{name}</span>
+          </p>
         ))
       }
     </aside>
     <div class="col-span-9 grid grid-cols-3 gap-2">
       {
         data.map((item) => (
-          <div class="aspect-[5/4]">
+          <a href={item.url} class="aspect-[5/4] bg-black">
             <Img imagePath={item.imagePath} title="test" />
-          </div>
+          </a>
         ))
       }
     </div>

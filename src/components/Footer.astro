@@ -4,14 +4,22 @@ const { types, keyboards } = json;
 ---
 
 <footer class="grid grid-cols-12 gap-2 pb-40">
-  <section class="col-span-9 col-start-4 grid grid-cols-9 gap-2">
+  <nav class="col-start-2 flex flex-col justify-end">
+    <a href="">Github</a>
+    <a href="">Instagram</a>
+    <a href="">Behance</a>
+  </nav>
+  <div class="col-span-9 col-start-4 grid grid-cols-9 gap-2">
     {
       keyboards.map((keyboard) => (
         <div class="col-span-3 flex aspect-[2] flex-col justify-end">
           <p>{keyboard}</p>
-          <nav>
+          <nav class="grid grid-cols-10 2xl:grid-cols-12">
             {types.map((type) => (
-              <a href={`type${type}-${keyboard}`} class="mr-1">
+              <a
+                class="aspect-square capitalize"
+                href={`type${type}-${keyboard}`}
+              >
                 {type}
               </a>
             ))}
@@ -19,5 +27,5 @@ const { types, keyboards } = json;
         </div>
       ))
     }
-  </section>
+  </div>
 </footer>
