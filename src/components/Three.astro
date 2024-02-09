@@ -1,0 +1,63 @@
+<section
+  class="canvas col-span-10 col-start-4 aspect-[2] overflow-hidden 2xl:aspect-[2.5]"
+>
+</section>
+
+<script>
+  import * as THREE from "three";
+  import { throttle } from "lodash";
+
+  const canvas: HTMLElement | null = document.querySelector(".canvas");
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(
+    75,
+    canvas ? canvas.offsetWidth / canvas.offsetHeight : 0,
+    0.1,
+    1000,
+  );
+
+  const renderer = new THREE.WebGLRenderer();
+  if (canvas) {
+    renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+    canvas.appendChild(renderer.domElement);
+  }
+
+  const geometry = new THREE.BoxGeometry(1, 1, 1);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    metalness: 1,
+    roughness: 0.5,
+  });
+  const cube = new THREE.Mesh(geometry, material);
+  scene.add(cube);
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  directionalLight.position.set(1, 2, 2);
+  const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+  directionalLight2.position.set(1, 1, 1);
+  scene.add(directionalLight);
+  scene.add(directionalLight2);
+
+  camera.position.z = 5;
+
+  function resize() {
+    if (canvas) {
+      camera.aspect = canvas.offsetWidth / canvas.offsetHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+    }
+  }
+  const throttleResize = throttle(resize, 500);
+  window.addEventListener("resize", throttleResize);
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.01;
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+</script>
