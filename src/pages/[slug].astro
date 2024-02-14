@@ -1,0 +1,40 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Three from "../components/Three.astro";
+import json from "../assets/routes.json";
+
+interface Props {
+  slug: string;
+  title: string;
+  kbdType: string;
+  caseType: string;
+}
+
+export async function getStaticPaths() {
+  const { routes } = json;
+  const pages = routes.map((route) => {
+    return {
+      slug: route.slug,
+      title: route.title,
+      kbdType: route.kbdType,
+      caseType: route.caseType,
+    };
+  });
+  return pages.map(({ slug, title, kbdType, caseType }) => {
+    return {
+      params: { slug },
+      props: { title, kbdType, caseType },
+    };
+  });
+}
+const { title, kbdType, caseType } = Astro.props;
+---
+
+<Layout title={title}>
+  <div class="col-start-2">
+    <div class="fixed">
+      <p>{title}</p>
+    </div>
+  </div>
+  <Three type={caseType} keyboard={kbdType} />
+</Layout>

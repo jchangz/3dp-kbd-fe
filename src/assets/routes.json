@@ -1,0 +1,112 @@
+{
+  "routes": [
+    {
+      "title": "Type1 Quefrency",
+      "slug": "type1-quefrency",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "Type2 Quefrency",
+      "slug": "type2-quefrency",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "Type3 Quefrency",
+      "slug": "type3-quefrency",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeG Quefrency",
+      "slug": "typeg-quefrency",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeGx Quefrency",
+      "slug": "typegx-quefrency",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeM Quefrency",
+      "slug": "typem-quefrency",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "Type1 Sinc",
+      "slug": "type1-sinc",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "Type2 Sinc",
+      "slug": "type2-sinc",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "Type3 Sinc",
+      "slug": "type3-sinc",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeG Sinc",
+      "slug": "typeg-sinc",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeGx Sinc",
+      "slug": "typegx-sinc",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeM Sinc",
+      "slug": "typem-sinc",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "Type1 KBO-5000",
+      "slug": "type1-kbo-5000",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "Type2 KBO-5000",
+      "slug": "type2-kbo-5000",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "Type3 KBO-5000",
+      "slug": "type3-kbo-5000",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeG KBO-5000",
+      "slug": "typeg-kbo-5000",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeGx KBO-5000",
+      "slug": "typegx-kbo-5000",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    },
+    {
+      "title": "TypeM KBO-5000",
+      "slug": "typem-kbo-5000",
+      "kbdType": "quefrency",
+      "caseType": "1"
+    }
+  ]
+}
