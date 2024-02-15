@@ -75,37 +75,37 @@
     {
       "title": "Type1 KBO-5000",
       "slug": "type1-kbo-5000",
-      "kbdType": "quefrency",
+      "kbdType": "kbo",
       "caseType": "1"
     },
     {
       "title": "Type2 KBO-5000",
       "slug": "type2-kbo-5000",
-      "kbdType": "quefrency",
+      "kbdType": "kbo",
       "caseType": "1"
     },
     {
       "title": "Type3 KBO-5000",
       "slug": "type3-kbo-5000",
-      "kbdType": "quefrency",
+      "kbdType": "kbo",
       "caseType": "1"
     },
     {
       "title": "TypeG KBO-5000",
       "slug": "typeg-kbo-5000",
-      "kbdType": "quefrency",
+      "kbdType": "kbo",
       "caseType": "1"
     },
     {
       "title": "TypeGx KBO-5000",
       "slug": "typegx-kbo-5000",
-      "kbdType": "quefrency",
+      "kbdType": "kbo",
       "caseType": "1"
     },
     {
       "title": "TypeM KBO-5000",
       "slug": "typem-kbo-5000",
-      "kbdType": "quefrency",
+      "kbdType": "kbo",
       "caseType": "1"
     }
   ]
