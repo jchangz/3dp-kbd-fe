@@ -39,37 +39,37 @@
     {
       "title": "Type1 Sinc",
       "slug": "type1-sinc",
-      "kbdType": "quefrency",
+      "kbdType": "sinc",
       "caseType": "1"
     },
     {
       "title": "Type2 Sinc",
       "slug": "type2-sinc",
-      "kbdType": "quefrency",
+      "kbdType": "sinc",
       "caseType": "1"
     },
     {
       "title": "Type3 Sinc",
       "slug": "type3-sinc",
-      "kbdType": "quefrency",
+      "kbdType": "sinc",
       "caseType": "1"
     },
     {
       "title": "TypeG Sinc",
       "slug": "typeg-sinc",
-      "kbdType": "quefrency",
+      "kbdType": "sinc",
       "caseType": "1"
     },
     {
       "title": "TypeGx Sinc",
       "slug": "typegx-sinc",
-      "kbdType": "quefrency",
+      "kbdType": "sinc",
       "caseType": "1"
     },
     {
       "title": "TypeM Sinc",
       "slug": "typem-sinc",
-      "kbdType": "quefrency",
+      "kbdType": "sinc",
       "caseType": "1"
     },
     {
