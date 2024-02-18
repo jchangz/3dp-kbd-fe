@@ -10,8 +10,14 @@ const { type, keyboard } = Astro.props;
 <section
   data-type={type}
   data-keyboard={keyboard}
-  class="canvas col-span-9 col-start-4 aspect-[2] overflow-hidden bg-black 2xl:aspect-[2.5]"
+  class="canvas relative col-span-9 col-start-4 aspect-[2] overflow-hidden bg-black 2xl:aspect-[2.5]"
 >
+  <div
+    class="absolute left-0 top-0 flex h-full w-full items-center justify-center bg-black transition-opacity duration-500"
+    id="three-loading"
+  >
+    <span class="text-white">Loading</span>
+  </div>
 </section>
 
 <script>
@@ -19,6 +25,7 @@ const { type, keyboard } = Astro.props;
   import { throttle } from "lodash";
   import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+  import { EXRLoader } from "three/addons/loaders/EXRLoader.js";
   import { three } from "../assets/three.json";
 
   let canvas: HTMLElement | null;
@@ -57,15 +64,6 @@ const { type, keyboard } = Astro.props;
     canvas = document.querySelector(".canvas");
     scene = new THREE.Scene();
 
-    const ambientLight = new THREE.AmbientLight(0x404040);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(1, 1, -2);
-    scene.add(directionalLight);
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 5);
-    directionalLight2.position.set(-3, 1, 0);
-    scene.add(directionalLight2);
-
     if (canvas) {
       camera = new THREE.PerspectiveCamera(
         1,
@@ -75,6 +73,13 @@ const { type, keyboard } = Astro.props;
       );
       camera.position.set(0, 100, 100);
       camera.updateProjectionMatrix();
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      pmremGenerator.compileEquirectangularShader();
 
       const keyboardName = canvas.dataset.keyboard || "";
 
@@ -97,7 +102,25 @@ const { type, keyboard } = Astro.props;
         roughness: 0.3,
       });
 
-      const loader = new GLTFLoader();
+      const manager = new THREE.LoadingManager(() => {
+        const loadScreen = document.getElementById("three-loading");
+        loadScreen?.classList.add("opacity-0");
+        loadScreen?.addEventListener("transitionend", (e) => {
+          if (e.target instanceof HTMLElement) {
+            e.target.remove();
+          }
+        });
+      });
+
+      new EXRLoader(manager).load("studio.exr", function (texture) {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        const exrRenderTarget = pmremGenerator.fromEquirectangular(texture);
+        caseMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
+        usbMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
+        keyMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
+      });
+
+      const loader = new GLTFLoader(manager);
       loader.load(caseModelSrc, function (gltf) {
         gltf.scene.traverse((child) => {
           if (child instanceof THREE.Mesh && child.isMesh) {
@@ -147,9 +170,6 @@ const { type, keyboard } = Astro.props;
         scene.add(switchMesh, keysGroup, gltf.scene);
       });
 
-      renderer = new THREE.WebGLRenderer();
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
       canvas.appendChild(renderer.domElement);
 
       new OrbitControls(camera, renderer.domElement);
