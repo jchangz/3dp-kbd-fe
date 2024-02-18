@@ -1,39 +1,4 @@
 {
-  "src": {
-    "quefrency": {
-      "keyboardModel": "src/assets/models/quefrency.glb",
-      "caseModel": {
-        "1": "src/assets/models/t1-q.glb",
-        "2": "src/assets/models/t1-q.glb",
-        "3": "src/assets/models/t1-q.glb",
-        "g": "src/assets/models/t1-q.glb",
-        "gx": "src/assets/models/t1-q.glb",
-        "m": "src/assets/models/t1-q.glb"
-      }
-    },
-    "sinc": {
-      "keyboardModel": "src/assets/models/sinc.glb",
-      "caseModel": {
-        "1": "src/assets/models/t1-s.glb",
-        "2": "src/assets/models/t1-s.glb",
-        "3": "src/assets/models/t1-s.glb",
-        "g": "src/assets/models/t1-s.glb",
-        "gx": "src/assets/models/t1-s.glb",
-        "m": "src/assets/models/t1-s.glb"
-      }
-    },
-    "kbo": {
-      "keyboardModel": "src/assets/models/kbo.glb",
-      "caseModel": {
-        "1": "src/assets/models/t1-k.glb",
-        "2": "src/assets/models/t1-k.glb",
-        "3": "src/assets/models/t1-k.glb",
-        "g": "src/assets/models/t1-k.glb",
-        "gx": "src/assets/models/t1-k.glb",
-        "m": "src/assets/models/t1-k.glb"
-      }
-    }
-  },
   "three": {
     "quefrency": {
       "mx": {
