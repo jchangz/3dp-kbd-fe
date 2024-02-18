@@ -19,7 +19,7 @@ const { type, keyboard } = Astro.props;
   import { throttle } from "lodash";
   import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-  import { three } from "../assets/models/data.json";
+  import { three } from "../assets/three.json";
 
   let canvas: HTMLElement | null;
 
@@ -80,8 +80,8 @@ const { type, keyboard } = Astro.props;
 
       ({ mx, rows } = (three as threeObj)[keyboardName]);
 
-      const keyboardModelSrc = `src/assets/models/${keyboardName}.glb`;
-      const caseModelSrc = `src/assets/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
+      const keyboardModelSrc = `/models/${keyboardName}.glb`;
+      const caseModelSrc = `/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
 
       const keyMaterial = new THREE.MeshStandardMaterial({
         color: 0x010101,
