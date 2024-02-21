@@ -26,6 +26,7 @@ const { type, keyboard } = Astro.props;
   import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   import { EXRLoader } from "three/addons/loaders/EXRLoader.js";
+  import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
   import { three } from "../assets/three.json";
 
   let canvas: HTMLElement | null,
@@ -134,7 +135,14 @@ const { type, keyboard } = Astro.props;
         keyMaterial.envMapIntensity = 0.1;
       });
 
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath(
+        "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
+      );
+
       const loader = new GLTFLoader(manager);
+      loader.setDRACOLoader(dracoLoader);
+
       loader.load(caseModelSrc, function (gltf) {
         gltf.scene.traverse((child) => {
           if (child instanceof THREE.Mesh && child.isMesh) {
