@@ -96,20 +96,6 @@ const { type, keyboard } = Astro.props;
       const keyboardModelSrc = `/models/${keyboardName}.glb`;
       const caseModelSrc = `/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
 
-      const keyMaterial = new THREE.MeshStandardMaterial({
-        color: 0x010101,
-        roughness: 0.3,
-      });
-      const usbMaterial = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        metalness: 1,
-        roughness: 0.25,
-      });
-      const caseMaterial = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        roughness: 0.1,
-      });
-
       const manager = new THREE.LoadingManager(() => {
         const loadScreen = document.getElementById("three-loading");
         loadScreen?.classList.add("opacity-0");
@@ -124,15 +110,63 @@ const { type, keyboard } = Astro.props;
         pmremGenerator.dispose();
       });
 
+      const texloader = new THREE.TextureLoader(manager);
+
+      const caseTexNormal = texloader.load("models/3dp_normal.webp");
+      const caseTexRoughness = texloader.load("models/3dp_roughness.webp");
+      const caseTexAO = texloader.load("models/3dp_ao.webp");
+      const caseFaceNormal = texloader.load("models/3dp_face.webp");
+
+      caseTexNormal.repeat.set(0, 3);
+      caseTexRoughness.repeat.set(0, 3);
+      caseTexAO.repeat.set(0, 3);
+      caseFaceNormal.repeat.set(25, 25);
+
+      caseTexNormal.wrapS =
+        caseTexNormal.wrapT =
+        caseTexRoughness.wrapS =
+        caseTexRoughness.wrapT =
+        caseTexAO.wrapS =
+        caseTexAO.wrapT =
+        caseFaceNormal.wrapS =
+        caseFaceNormal.wrapT =
+          THREE.RepeatWrapping;
+
+      const envMapIntensity = 0.1;
+
+      const caseMaterial = new THREE.MeshStandardMaterial({
+        roughness: 0.2,
+        envMapIntensity: envMapIntensity,
+        normalMap: caseTexNormal,
+        roughnessMap: caseTexRoughness,
+        aoMap: caseTexAO,
+      });
+      const faceMaterial = new THREE.MeshStandardMaterial({
+        roughness: 0.2,
+        normalMap: caseFaceNormal,
+        envMapIntensity: envMapIntensity,
+      });
+
+      const keyMaterial = new THREE.MeshStandardMaterial({
+        color: 0x171718,
+        roughness: 0.3,
+        envMapIntensity: envMapIntensity,
+      });
+      const usbMaterial = new THREE.MeshStandardMaterial({
+        metalness: 1,
+        roughness: 0.25,
+        envMapIntensity: envMapIntensity,
+      });
+
+      caseMaterial.color = faceMaterial.color = new THREE.Color(0xf5f5f5);
+
       new EXRLoader(manager).load("studio.exr", function (texture) {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         const exrRenderTarget = pmremGenerator.fromEquirectangular(texture);
         caseMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
-        caseMaterial.envMapIntensity = 0.1;
+        faceMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
         usbMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
-        usbMaterial.envMapIntensity - 0.1;
         keyMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
-        keyMaterial.envMapIntensity = 0.1;
       });
 
       const dracoLoader = new DRACOLoader();
@@ -145,10 +179,13 @@ const { type, keyboard } = Astro.props;
 
       loader.load(caseModelSrc, function (gltf) {
         gltf.scene.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.isMesh) {
-            child.material = caseMaterial;
+          if (child.name === "Scene") {
             centerBox.setFromObject(child);
             centerBox.getCenter(centerVector);
+          }
+          if (child instanceof THREE.Mesh && child.isMesh) {
+            if (child.name.includes("_1")) child.material = caseMaterial;
+            else child.material = faceMaterial;
           }
         });
         scene.add(gltf.scene);
@@ -198,9 +235,9 @@ const { type, keyboard } = Astro.props;
 
       const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
       directionalLight.position.set(5, 1, -2);
-      const overheadLight = new THREE.DirectionalLight(0xffffff, 2);
+      const overheadLight = new THREE.DirectionalLight(0xffffff, 0.5);
       overheadLight.position.set(-0.5, 3, -5);
-      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 2);
+      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 4);
       directionalLight2.position.set(-3, 1, 0);
       scene.add(overheadLight);
       scene.add(directionalLight);
