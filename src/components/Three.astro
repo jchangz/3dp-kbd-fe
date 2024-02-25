@@ -135,7 +135,7 @@ const { type, keyboard } = Astro.props;
         caseFaceNormal.wrapT =
           THREE.RepeatWrapping;
 
-      const envMapIntensity = 0.5;
+      const envMapIntensity = 1;
 
       const caseMaterial = new THREE.MeshStandardMaterial({
         roughness: 0.2,
@@ -237,6 +237,7 @@ const { type, keyboard } = Astro.props;
 
       canvas.appendChild(renderer.domElement);
 
+      // shadow plane
       const planeGeometry = new THREE.PlaneGeometry(5, 2);
       planeGeometry.rotateX(-Math.PI / 2);
       const shadowMaterial = new THREE.ShadowMaterial();
@@ -245,15 +246,24 @@ const { type, keyboard } = Astro.props;
       shadowPlane.receiveShadow = true;
       scene.add(shadowPlane);
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-      directionalLight.position.set(5, 1, -2);
-      const overheadLight = new THREE.DirectionalLight(0xffffff, 0.5);
-      overheadLight.position.set(-0.5, 3, -5);
-      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 4);
-      directionalLight2.position.set(-3, 1, 0);
-      scene.add(overheadLight);
-      scene.add(directionalLight);
-      scene.add(directionalLight2);
+      // main light
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1);
+      keyLight.position.set(-2, 6, 2);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.width = 1024;
+      keyLight.shadow.mapSize.height = 1024;
+      keyLight.shadow.camera.near = 5;
+      keyLight.shadow.camera.far = 8;
+      keyLight.shadow.camera.left = -2;
+      keyLight.shadow.camera.right = 2.2;
+      keyLight.shadow.camera.top = 2;
+      keyLight.shadow.camera.bottom = -2;
+      scene.add(keyLight);
+
+      // fill light
+      const fillLight = new THREE.DirectionalLight(0xffffff, 1);
+      fillLight.position.set(-2, 6, -12);
+      scene.add(fillLight);
 
       const throttleResize = throttle(onWindowResize, 500);
       window.addEventListener("resize", throttleResize);
