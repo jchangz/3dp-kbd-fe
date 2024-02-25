@@ -119,11 +119,15 @@ const { type, keyboard } = Astro.props;
       const caseTexRoughness = texloader.load("models/3dp_roughness.webp");
       const caseTexAO = texloader.load("models/3dp_ao.webp");
       const caseFaceNormal = texloader.load("models/3dp_face.webp");
+      const keycapNormal = texloader.load("models/key_normal.webp");
+      const keycapRoughness = texloader.load("models/key_roughness.webp");
 
       caseTexNormal.repeat.set(0, 3);
       caseTexRoughness.repeat.set(0, 3);
       caseTexAO.repeat.set(0, 3);
       caseFaceNormal.repeat.set(25, 25);
+      keycapNormal.repeat.set(2, 2);
+      keycapRoughness.repeat.set(2, 2);
 
       caseTexNormal.wrapS =
         caseTexNormal.wrapT =
@@ -133,6 +137,10 @@ const { type, keyboard } = Astro.props;
         caseTexAO.wrapT =
         caseFaceNormal.wrapS =
         caseFaceNormal.wrapT =
+        keycapNormal.wrapS =
+        keycapNormal.wrapT =
+        keycapRoughness.wrapS =
+        keycapRoughness.wrapT =
           THREE.RepeatWrapping;
 
       const envMapIntensity = 1;
@@ -152,7 +160,9 @@ const { type, keyboard } = Astro.props;
 
       const keyMaterial = new THREE.MeshStandardMaterial({
         color: 0x171718,
-        roughness: 0.3,
+        roughness: 0.4,
+        normalMap: keycapNormal,
+        roughnessMap: keycapRoughness,
         envMapIntensity: envMapIntensity,
       });
       const usbMaterial = new THREE.MeshStandardMaterial({
@@ -166,10 +176,11 @@ const { type, keyboard } = Astro.props;
       new EXRLoader(manager).load("studio.exr", function (texture) {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         const exrRenderTarget = pmremGenerator.fromEquirectangular(texture);
-        caseMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
-        faceMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
-        usbMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
-        keyMaterial.envMap = exrRenderTarget ? exrRenderTarget.texture : null;
+        caseMaterial.envMap =
+          faceMaterial.envMap =
+          usbMaterial.envMap =
+          keyMaterial.envMap =
+            exrRenderTarget ? exrRenderTarget.texture : null;
       });
 
       const dracoLoader = new DRACOLoader();
