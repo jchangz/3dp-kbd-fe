@@ -27,6 +27,7 @@ const { type, keyboard } = Astro.props;
   import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   import { EXRLoader } from "three/addons/loaders/EXRLoader.js";
   import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+  import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
   import { three } from "../assets/three.json";
 
   let canvas: HTMLElement | null,
@@ -83,7 +84,7 @@ const { type, keyboard } = Astro.props;
       renderer.toneMappingExposure = 1;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.setClearColor(0xF5F5F5);
+      renderer.setClearColor(0xf5f5f5);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
 
@@ -183,13 +184,14 @@ const { type, keyboard } = Astro.props;
             exrRenderTarget ? exrRenderTarget.texture : null;
       });
 
-      const dracoLoader = new DRACOLoader();
+      const dracoLoader = new DRACOLoader(manager);
       dracoLoader.setDecoderPath(
         "https://www.gstatic.com/draco/versioned/decoders/1.5.7/",
       );
 
-      const loader = new GLTFLoader(manager);
-      loader.setDRACOLoader(dracoLoader);
+      const loader = new GLTFLoader(manager)
+        .setDRACOLoader(dracoLoader)
+        .setMeshoptDecoder(MeshoptDecoder);
 
       loader.load(caseModelSrc, function (gltf) {
         gltf.scene.traverse((child) => {
