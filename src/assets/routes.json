@@ -10,7 +10,7 @@
       "title": "Type2 Quefrency",
       "slug": "type2-quefrency",
       "kbdType": "quefrency",
-      "caseType": "1"
+      "caseType": "2"
     },
     {
       "title": "Type3 Quefrency",
@@ -46,7 +46,7 @@
       "title": "Type2 Sinc",
       "slug": "type2-sinc",
       "kbdType": "sinc",
-      "caseType": "1"
+      "caseType": "2"
     },
     {
       "title": "Type3 Sinc",
@@ -82,7 +82,7 @@
       "title": "Type2 KBO-5000",
       "slug": "type2-kbo-5000",
       "kbdType": "kbo",
-      "caseType": "1"
+      "caseType": "2"
     },
     {
       "title": "Type3 KBO-5000",
