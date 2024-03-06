@@ -166,6 +166,11 @@ const { type, keyboard } = Astro.props;
         roughnessMap: keycapRoughness,
         envMapIntensity: envMapIntensity,
       });
+      const pcbMaterial = new THREE.MeshStandardMaterial({
+        color: 0x046307,
+        roughness: 0.5,
+        envMapIntensity: envMapIntensity,
+      });
       const usbMaterial = new THREE.MeshStandardMaterial({
         metalness: 1,
         roughness: 0.25,
@@ -180,6 +185,7 @@ const { type, keyboard } = Astro.props;
         caseMaterial.envMap =
           faceMaterial.envMap =
           usbMaterial.envMap =
+          pcbMaterial.envMap =
           keyMaterial.envMap =
             exrRenderTarget ? exrRenderTarget.texture : null;
       });
@@ -241,6 +247,7 @@ const { type, keyboard } = Astro.props;
         gltf.scene.traverse((child) => {
           if (child instanceof THREE.Mesh && child.isMesh) {
             child.material = keyMaterial;
+            if (child.name === "pcb") child.material = pcbMaterial;
             if (child.name === "usb") child.material = usbMaterial;
           }
         });
