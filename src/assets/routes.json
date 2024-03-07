@@ -1,112 +1,150 @@
 {
+  "keyboards": ["quefrency", "sinc", "kbo"],
+  "types": ["1", "2", "3", "g", "gx", "m"],
   "routes": [
     {
-      "title": "Type1 Quefrency",
-      "slug": "type1-quefrency",
+      "title": "Quefrency Type1",
+      "slug": "quefrency-type1",
       "kbdType": "quefrency",
-      "caseType": "1"
+      "caseType": "1",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
     },
     {
-      "title": "Type2 Quefrency",
-      "slug": "type2-quefrency",
+      "title": "Sinc Type1",
+      "slug": "sinc-type1",
+      "kbdType": "sinc",
+      "caseType": "1",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "KBO-5000 Type1",
+      "slug": "kbo-type1",
+      "kbdType": "kbo",
+      "caseType": "1",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "Quefrency Type2",
+      "slug": "quefrency-type2",
       "kbdType": "quefrency",
-      "caseType": "2"
+      "caseType": "2",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
     },
     {
-      "title": "Type3 Quefrency",
-      "slug": "type3-quefrency",
+      "title": "Sinc Type2",
+      "slug": "sinc-type2",
+      "kbdType": "sinc",
+      "caseType": "2",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "KBO-5000 Type2",
+      "slug": "kbo-type2",
+      "kbdType": "kbo",
+      "caseType": "2",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "Quefrency Type3",
+      "slug": "quefrency-type3",
       "kbdType": "quefrency",
-      "caseType": "3"
+      "caseType": "3",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
     },
     {
-      "title": "TypeG Quefrency",
-      "slug": "typeg-quefrency",
+      "title": "Sinc Type3",
+      "slug": "sinc-type3",
+      "kbdType": "sinc",
+      "caseType": "3",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "KBO-5000 Type3",
+      "slug": "kbo-type3",
+      "kbdType": "kbo",
+      "caseType": "3",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "Quefrency TypeG",
+      "slug": "quefrency-typeg",
       "kbdType": "quefrency",
-      "caseType": "1"
+      "caseType": "g",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
     },
     {
-      "title": "TypeGx Quefrency",
-      "slug": "typegx-quefrency",
+      "title": "Sinc TypeG",
+      "slug": "sinc-typeg",
+      "kbdType": "sinc",
+      "caseType": "g",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "KBO-5000 TypeG",
+      "slug": "kbo-typeg",
+      "kbdType": "kbo",
+      "caseType": "g",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "Quefrency TypeGx",
+      "slug": "quefrency-typegx",
       "kbdType": "quefrency",
-      "caseType": "1"
+      "caseType": "gx",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
     },
     {
-      "title": "TypeM Quefrency",
-      "slug": "typem-quefrency",
+      "title": "Sinc TypeGx",
+      "slug": "sinc-typegx",
+      "kbdType": "sinc",
+      "caseType": "gx",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "KBO-5000 TypeGx",
+      "slug": "kbo-typegx",
+      "kbdType": "kbo",
+      "caseType": "gx",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
+    },
+    {
+      "title": "Quefrency TypeM",
+      "slug": "quefrency-typem",
       "kbdType": "quefrency",
-      "caseType": "1"
+      "caseType": "m",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
     },
     {
-      "title": "Type1 Sinc",
-      "slug": "type1-sinc",
+      "title": "Sinc TypeM",
+      "slug": "sinc-typem",
       "kbdType": "sinc",
-      "caseType": "1"
+      "caseType": "m",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
     },
     {
-      "title": "Type2 Sinc",
-      "slug": "type2-sinc",
-      "kbdType": "sinc",
-      "caseType": "2"
-    },
-    {
-      "title": "Type3 Sinc",
-      "slug": "type3-sinc",
-      "kbdType": "sinc",
-      "caseType": "3"
-    },
-    {
-      "title": "TypeG Sinc",
-      "slug": "typeg-sinc",
-      "kbdType": "sinc",
-      "caseType": "1"
-    },
-    {
-      "title": "TypeGx Sinc",
-      "slug": "typegx-sinc",
-      "kbdType": "sinc",
-      "caseType": "1"
-    },
-    {
-      "title": "TypeM Sinc",
-      "slug": "typem-sinc",
-      "kbdType": "sinc",
-      "caseType": "1"
-    },
-    {
-      "title": "Type1 KBO-5000",
-      "slug": "type1-kbo-5000",
+      "title": "KBO-5000 TypeM",
+      "slug": "kbo-typem",
       "kbdType": "kbo",
-      "caseType": "1"
-    },
-    {
-      "title": "Type2 KBO-5000",
-      "slug": "type2-kbo-5000",
-      "kbdType": "kbo",
-      "caseType": "2"
-    },
-    {
-      "title": "Type3 KBO-5000",
-      "slug": "type3-kbo-5000",
-      "kbdType": "kbo",
-      "caseType": "3"
-    },
-    {
-      "title": "TypeG KBO-5000",
-      "slug": "typeg-kbo-5000",
-      "kbdType": "kbo",
-      "caseType": "1"
-    },
-    {
-      "title": "TypeGx KBO-5000",
-      "slug": "typegx-kbo-5000",
-      "kbdType": "kbo",
-      "caseType": "1"
-    },
-    {
-      "title": "TypeM KBO-5000",
-      "slug": "typem-kbo-5000",
-      "kbdType": "kbo",
-      "caseType": "1"
+      "caseType": "m",
+      "hero": "/src/assets/testimg.jpg",
+      "alt": ""
     }
   ]
 }
