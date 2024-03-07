@@ -1,37 +1,22 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Img from "../components/Img.astro";
-import json from "../assets/cases.json";
+import json from "../assets/routes.json";
 
-const { types, data } = json;
+const { routes } = json;
 ---
 
 <Layout title="3DPKBD">
-  <section class="col-span-10 col-start-3 grid grid-cols-10">
-    <aside class="grid justify-end gap-2">
-      {
-        types.map((name) => (
-          <p class="flex w-[100px] items-center justify-center">
-            Type<span class="capitalize">{name}</span>
-          </p>
-        ))
-      }
-    </aside>
-    <div class="col-span-9 grid grid-cols-3 gap-2">
-      {
-        data.map((item) => (
-          <a href={item.url} class="aspect-[5/4] bg-black">
-            <Img imagePath={item.imagePath} title="test" />
-          </a>
-        ))
-      }
-    </div>
+  <section class="col-span-12 grid grid-cols-3">
+    {
+      routes.map((item) => (
+        <a href={item.slug} class="group">
+          <Img imagePath={item.hero} title={`${item.title} 3D Printed Case`} />
+          <span class="absolute bottom-0 left-0 capitalize group-hover:underline">
+            {item.kbdType.slice(0, 1)}—{item.caseType}
+          </span>
+        </a>
+      ))
+    }
   </section>
 </Layout>
-<style>
-  p {
-    text-orientation: sideways;
-    writing-mode: vertical-rl;
-    transform: scale(-1);
-  }
-</style>
