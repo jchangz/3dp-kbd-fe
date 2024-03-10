@@ -25,9 +25,9 @@ const { type, keyboard } = Astro.props;
   import { debounce } from "lodash";
   import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
   import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-  import { EXRLoader } from "three/addons/loaders/EXRLoader.js";
   import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
   import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+  import { GainMapLoader } from "@monogrid/gainmap-js";
   import { MathUtils } from "three";
   import { three } from "../assets/three.json";
 
@@ -181,16 +181,30 @@ const { type, keyboard } = Astro.props;
 
       caseMaterial.color = faceMaterial.color = new THREE.Color(0xfefefe);
 
-      new EXRLoader(manager).load("studio.exr", function (texture) {
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        const exrRenderTarget = pmremGenerator.fromEquirectangular(texture);
-        caseMaterial.envMap =
-          faceMaterial.envMap =
-          usbMaterial.envMap =
-          pcbMaterial.envMap =
-          keyMaterial.envMap =
-            exrRenderTarget ? exrRenderTarget.texture : null;
-      });
+      const gainMap = new GainMapLoader(renderer).load(
+        [
+          "gainmap/studio.webp",
+          "gainmap/studio-gainmap.webp",
+          "gainmap/studio.json",
+        ],
+        function (texture) {
+          const gainMapBackground = texture.renderTarget.texture;
+          gainMapBackground.mapping = THREE.EquirectangularReflectionMapping;
+          gainMapBackground.needsUpdate = true;
+          const gainMapPMREMRenderTarget =
+            pmremGenerator.fromEquirectangular(gainMapBackground);
+
+          caseMaterial.envMap =
+            faceMaterial.envMap =
+            usbMaterial.envMap =
+            pcbMaterial.envMap =
+            keyMaterial.envMap =
+              gainMapPMREMRenderTarget
+                ? gainMapPMREMRenderTarget.texture
+                : null;
+          gainMap.dispose();
+        },
+      );
 
       const dracoLoader = new DRACOLoader(manager);
       dracoLoader.setDecoderPath(
