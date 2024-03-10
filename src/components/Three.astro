@@ -21,6 +21,7 @@ const { type, keyboard } = Astro.props;
   import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
   import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
   import { GainMapLoader } from "@monogrid/gainmap-js";
+  import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
   import { MathUtils } from "three";
   import { three } from "../assets/three.json";
 
@@ -91,6 +92,24 @@ const { type, keyboard } = Astro.props;
         envMapIntensity: envMapIntensity,
       });
       caseMat.color = faceMat.color = new THREE.Color(0xfefefe);
+
+      // GUI
+
+      const params = {
+        case: caseMat.color.getHex(),
+        keycap: keyMat.color.getHex(),
+      };
+
+      const gui = new GUI({ autoPlace: false });
+      gui.domElement.id = "gui";
+      canvas.appendChild(gui.domElement);
+      gui.addColor(params, "case").onChange(function (val) {
+        caseMat.color.setHex(val);
+      });
+      gui.addColor(params, "keycap").onChange(function (val) {
+        keyMat.color.setHex(val);
+      });
+      gui.open();
 
       // Loaders
 
@@ -285,3 +304,11 @@ const { type, keyboard } = Astro.props;
     renderer.render(scene, camera);
   }
 </script>
+
+<style is:global>
+  #gui {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+  }
+</style>
