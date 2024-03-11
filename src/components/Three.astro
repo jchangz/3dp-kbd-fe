@@ -81,6 +81,11 @@ const { type, keyboard } = Astro.props;
         roughness: 0.5,
         envMapIntensity: envMapIntensity,
       });
+      const baseMat = new THREE.MeshStandardMaterial({
+        color: 0x171718,
+        roughness: 0.3,
+        envMapIntensity: envMapIntensity,
+      });
       const pcbMat = new THREE.MeshStandardMaterial({
         color: 0x046307,
         roughness: 0.8,
@@ -166,7 +171,7 @@ const { type, keyboard } = Astro.props;
         gainMapBackground.needsUpdate = true;
         const gainMapPMREMRenderTarget = pmremGenerator.fromEquirectangular(gainMapBackground);
 
-        caseMat.envMap = faceMat.envMap = usbMat.envMap = pcbMat.envMap = keyMat.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
+        caseMat.envMap = faceMat.envMap = usbMat.envMap = pcbMat.envMap = keyMat.envMap = baseMat.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
         gainMap.dispose();
       });
 
@@ -235,13 +240,14 @@ const { type, keyboard } = Astro.props;
         // Create instanced mesh for mx switch
         const _switchMesh = gltf.scene.getObjectByName("switch");
         if (_switchMesh instanceof THREE.Mesh) {
-          switchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), keyMat, mx.x.length);
+          switchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, mx.x.length);
           switchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         }
 
         gltf.scene.traverse((child) => {
           if (child instanceof THREE.Mesh && child.isMesh) {
             child.material = keyMat;
+            if (child.name === "plate" || child.name === "switch") child.material = baseMat;
             if (child.name === "pcb") child.material = pcbMat;
             if (child.name === "usb") child.material = usbMat;
           }
