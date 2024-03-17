@@ -62,6 +62,10 @@ const { type, keyboard } = Astro.props;
       setCameraFOV();
 
       controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.autoRotate = true;
+      controls.minDistance = 100;
+      controls.maxDistance = 200;
 
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
       pmremGenerator.compileEquirectangularShader();
@@ -307,6 +311,7 @@ const { type, keyboard } = Astro.props;
       }
       switchMesh.instanceMatrix.needsUpdate = true;
     }
+    controls.update();
     renderer.render(scene, camera);
   }
 </script>
