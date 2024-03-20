@@ -7,7 +7,7 @@ interface Props {
 const { type, keyboard } = Astro.props;
 ---
 
-<section data-type={type} data-keyboard={keyboard} class="canvas sticky top-0 col-span-6 col-start-1 row-start-1 h-screen bg-[#f5f5f5]">
+<section data-type={type} data-keyboard={keyboard} class="canvas col-span-12 row-start-1 h-screen bg-[#1f1f1f]">
   <div class="absolute left-0 top-0 flex h-full w-full items-center justify-center bg-[#f5f5f5] transition-opacity duration-500" id="three-loading">
     <span class="text-black">Loading</span>
   </div>
@@ -32,6 +32,7 @@ const { type, keyboard } = Astro.props;
   const keysGroup = new THREE.Group();
   let switchMesh: THREE.InstancedMesh;
   const switch3DMap = new THREE.Object3D();
+  const rotation = Math.PI / 2;
 
   init();
   animate();
@@ -43,7 +44,7 @@ const { type, keyboard } = Astro.props;
     const centerVector = new THREE.Vector3(),
       centerBox = new THREE.Box3();
 
-    const envMapIntensity = 0.4;
+    const envMapIntensity = 2;
 
     if (canvas) {
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -52,18 +53,18 @@ const { type, keyboard } = Astro.props;
       renderer.toneMappingExposure = 1;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.setClearColor(0xf5f5f5);
+      renderer.setClearColor(0x1f1f1f);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
       canvas.appendChild(renderer.domElement);
 
       camera = new THREE.PerspectiveCamera(1, canvas.offsetWidth / canvas.offsetHeight, 1, 1000);
-      camera.position.set(70, 90, 110);
+      camera.position.set(110, 90, -70);
       setCameraFOV();
 
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
-      controls.autoRotate = true;
+      // controls.autoRotate = true;
       controls.minDistance = 100;
       controls.maxDistance = 200;
 
@@ -73,11 +74,11 @@ const { type, keyboard } = Astro.props;
       // Materials
 
       const caseMat = new THREE.MeshStandardMaterial({
-        roughness: 0.2,
+        roughness: 0.8,
         envMapIntensity: envMapIntensity,
       });
       const faceMat = new THREE.MeshStandardMaterial({
-        roughness: 0.2,
+        roughness: 0.4,
         envMapIntensity: envMapIntensity,
       });
       const keyMat = new THREE.MeshStandardMaterial({
@@ -97,10 +98,10 @@ const { type, keyboard } = Astro.props;
       });
       const usbMat = new THREE.MeshStandardMaterial({
         metalness: 1,
-        roughness: 0.25,
+        roughness: 0.2,
         envMapIntensity: envMapIntensity,
       });
-      caseMat.color = faceMat.color = new THREE.Color(0xfefefe);
+      caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
       // GUI
 
@@ -182,21 +183,19 @@ const { type, keyboard } = Astro.props;
       // Lights
 
       const keyLight = new THREE.DirectionalLight(0xffffff, 1);
-      keyLight.position.set(-2, 6, 2);
-      keyLight.castShadow = true;
-      keyLight.shadow.mapSize.width = 1024;
-      keyLight.shadow.mapSize.height = 1024;
-      keyLight.shadow.camera.near = 5;
-      keyLight.shadow.camera.far = 8;
-      keyLight.shadow.camera.left = -2;
-      keyLight.shadow.camera.right = 2.2;
-      keyLight.shadow.camera.top = 2;
-      keyLight.shadow.camera.bottom = -2;
+      keyLight.position.set(-5, 4, 2);
       scene.add(keyLight);
+
+      const keyLight2 = new THREE.DirectionalLight(0xffffff, 1);
+      keyLight2.position.set(-2, 4, -2);
+      keyLight2.castShadow = true;
+      keyLight2.shadow.mapSize.width = 1024;
+      keyLight2.shadow.mapSize.height = 1024;
+      scene.add(keyLight2);
 
       // Shadow Plane
 
-      const planeGeometry = new THREE.PlaneGeometry(5, 2);
+      const planeGeometry = new THREE.PlaneGeometry(2, 5);
       planeGeometry.rotateX(-Math.PI / 2);
       const shadowMaterial = new THREE.ShadowMaterial();
       shadowMaterial.opacity = 0.3;
@@ -214,6 +213,7 @@ const { type, keyboard } = Astro.props;
       loader.load(caseModelSrc, function (gltf) {
         gltf.scene.traverse((child) => {
           if (child.name === "Scene") {
+            child.rotation.y = rotation;
             centerBox.setFromObject(child);
             centerBox.getCenter(centerVector);
           }
@@ -256,7 +256,7 @@ const { type, keyboard } = Astro.props;
             if (child.name === "usb") child.material = usbMat;
           }
         });
-
+        switchMesh.rotation.y = keysGroup.rotation.y = gltf.scene.rotation.y = rotation;
         scene.add(switchMesh, keysGroup, gltf.scene);
       });
 
@@ -270,7 +270,7 @@ const { type, keyboard } = Astro.props;
   function setCameraFOV() {
     // https://discourse.threejs.org/t/keeping-an-object-scaled-based-on-the-bounds-of-the-canvas-really-battling-to-explain-this-one/17574/10
     const fov = 1;
-    const aspectRatio = 16 / 9;
+    const aspectRatio = 2;
     const cameraHeight = Math.tan(MathUtils.degToRad(fov / 2));
     const ratio = camera.aspect / aspectRatio;
     const newCameraHeight = cameraHeight / ratio;
