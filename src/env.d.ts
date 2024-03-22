@@ -9,8 +9,12 @@ interface rowsObj {
   [key: string]: { length: number; matrix: number[] };
 }
 interface threeObj {
+  mx: mxObj[];
+  rows: rowsObj;
+}
+interface keyboardObj {
   [index: string]: {
-    mx: mxObj[];
-    rows: rowsObj;
+    left: threeObj;
+    right: threeObj;
   };
 }

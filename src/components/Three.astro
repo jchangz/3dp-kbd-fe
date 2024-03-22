@@ -26,12 +26,18 @@ const { type, keyboard } = Astro.props;
   import { three } from "../assets/three.json";
 
   let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, controls: OrbitControls;
-  let mx: mxObj[], rows: rowsObj;
+  let left: threeObj, right: threeObj;
 
-  // Group to hold all keycap instanced meshes based on "rows" from json
-  const keysGroup = new THREE.Group();
-  let switchMesh: THREE.InstancedMesh;
-  const switch3DMap = new THREE.Object3D();
+  const leftGroup = new THREE.Group();
+  const keysGroupLeft = new THREE.Group();
+  let leftSwitchMesh: THREE.InstancedMesh;
+  const leftSwitch3DMap = new THREE.Object3D();
+
+  const rightGroup = new THREE.Group();
+  const keysGroupRight = new THREE.Group();
+  let rightSwitchMesh: THREE.InstancedMesh;
+  const rightSwitch3DMap = new THREE.Object3D();
+
   const rotation = Math.PI / 2;
 
   init();
@@ -206,7 +212,7 @@ const { type, keyboard } = Astro.props;
       // Load Models
 
       const keyboardName = canvas.dataset.keyboard || "";
-      ({ mx, rows } = (three as threeObj)[keyboardName]);
+      ({ left, right } = (three as keyboardObj)[keyboardName]);
       const keyboardModelSrc = `/models/${keyboardName}.glb`;
       const caseModelSrc = `/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
 
@@ -238,28 +244,41 @@ const { type, keyboard } = Astro.props;
         scene.add(switchMesh, keysGroup, gltf.scene);
       });
 
+      // Keycap & Switch Loader
+
       loader.load("models/switch.glb", function (gltf) {
-        // Create instanced mesh for all keycaps
-        Object.keys(rows).forEach((row) => {
-          const _keycapMesh = gltf.scene.getObjectByName(row);
-          if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-            const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, rows[row].length);
-            keycapMesh.name = row;
-            keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-
-            keysGroup.add(keycapMesh);
-          }
-        });
-
         // Create instanced mesh for mx switch
         const _switchMesh = gltf.scene.getObjectByName("switch");
         if (_switchMesh instanceof THREE.Mesh) {
-          switchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, mx.length);
-          switchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, left.mx.length);
+          leftSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          rightSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, right.mx.length);
+          rightSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         }
 
-        switchMesh.rotation.y = keysGroup.rotation.y = rotation;
-        scene.add(switchMesh, keysGroup);
+        // Create instanced mesh for all left keycaps
+        Object.keys(left.rows).forEach((row) => {
+          const _keycapMesh = gltf.scene.getObjectByName(row);
+          if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
+            const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, left.rows[row].length);
+            keycapMesh.name = row;
+            keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            keysGroupLeft.add(keycapMesh);
+          }
+        });
+        // Create instanced mesh for all right keycaps
+        Object.keys(right.rows).forEach((row) => {
+          const _keycapMesh = gltf.scene.getObjectByName(row);
+          if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
+            const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, right.rows[row].length);
+            keycapMesh.name = row;
+            keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            keysGroupRight.add(keycapMesh);
+          }
+        });
+
+        leftSwitchMesh.rotation.y = keysGroupLeft.rotation.y = rightSwitchMesh.rotation.y = keysGroupRight.rotation.y = rotation;
+        scene.add(leftSwitchMesh, keysGroupLeft, rightSwitchMesh, keysGroupRight);
       });
 
       // Resize Handler
@@ -298,20 +317,37 @@ const { type, keyboard } = Astro.props;
   }
 
   function render() {
-    if (switchMesh) {
+    if (leftSwitchMesh && rightSwitchMesh) {
       let i = 0;
-      for (let x = 0; x < mx.length; x++) {
-        switch3DMap.position.set(mx[i].x, mx[i].y, mx[i].z);
-        switch3DMap.updateMatrix();
+      var maxLength = Math.max(left.mx.length, right.mx.length);
 
-        keysGroup.children.forEach((mesh) => {
-          if (mesh instanceof THREE.InstancedMesh && rows[mesh.name].matrix[i]) {
-            mesh.setMatrixAt(rows[mesh.name].matrix[i] - 1, switch3DMap.matrix);
-          }
-        });
-        switchMesh.setMatrixAt(i++, switch3DMap.matrix);
+      for (let x = 0; x < maxLength; x++) {
+        if (x < left.mx.length) {
+          leftSwitch3DMap.position.set(left.mx[i].x, left.mx[i].y, left.mx[i].z);
+          leftSwitch3DMap.updateMatrix();
+
+          keysGroupLeft.children.forEach((mesh) => {
+            if (mesh instanceof THREE.InstancedMesh && left.rows[mesh.name].matrix[i]) {
+              mesh.setMatrixAt(left.rows[mesh.name].matrix[i] - 1, leftSwitch3DMap.matrix);
+            }
+          });
+          leftSwitchMesh.setMatrixAt(i, leftSwitch3DMap.matrix);
+        }
+        if (x < right.mx.length) {
+          rightSwitch3DMap.position.set(right.mx[i].x, right.mx[i].y, right.mx[i].z);
+          rightSwitch3DMap.updateMatrix();
+
+          keysGroupRight.children.forEach((mesh) => {
+            if (mesh instanceof THREE.InstancedMesh && right.rows[mesh.name].matrix[i]) {
+              mesh.setMatrixAt(right.rows[mesh.name].matrix[i] - 1, rightSwitch3DMap.matrix);
+            }
+          });
+          rightSwitchMesh.setMatrixAt(i, rightSwitch3DMap.matrix);
+        }
+        i++;
       }
-      switchMesh.instanceMatrix.needsUpdate = true;
+      leftSwitchMesh.instanceMatrix.needsUpdate = true;
+      rightSwitchMesh.instanceMatrix.needsUpdate = true;
     }
     controls.update();
     renderer.render(scene, camera);
