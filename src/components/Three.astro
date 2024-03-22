@@ -26,7 +26,7 @@ const { type, keyboard } = Astro.props;
   import { three } from "../assets/three.json";
 
   let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, controls: OrbitControls;
-  let mx: mxObj, rows: rowsObj;
+  let mx: mxObj[], rows: rowsObj;
 
   // Group to hold all keycap instanced meshes based on "rows" from json
   const keysGroup = new THREE.Group();
@@ -226,13 +226,23 @@ const { type, keyboard } = Astro.props;
         scene.add(gltf.scene);
       });
       loader.load(keyboardModelSrc, function (gltf) {
+        gltf.scene.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.isMesh) {
+            child.material = keyMat;
+            if (child.name === "plate" || child.name === "switch") child.material = baseMat;
+            if (child.name === "pcb") child.material = pcbMat;
+            if (child.name === "usb") child.material = usbMat;
+          }
+        });
+        gltf.scene.rotation.y = rotation;
+        scene.add(switchMesh, keysGroup, gltf.scene);
+      });
+
+      loader.load("models/switch.glb", function (gltf) {
         // Create instanced mesh for all keycaps
         Object.keys(rows).forEach((row) => {
           const _keycapMesh = gltf.scene.getObjectByName(row);
           if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-            // Hide all original keycap meshes expect r1
-            if (row !== "r1") _keycapMesh.visible = false;
-
             const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, rows[row].length);
             keycapMesh.name = row;
             keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -244,20 +254,12 @@ const { type, keyboard } = Astro.props;
         // Create instanced mesh for mx switch
         const _switchMesh = gltf.scene.getObjectByName("switch");
         if (_switchMesh instanceof THREE.Mesh) {
-          switchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, mx.x.length);
+          switchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, mx.length);
           switchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         }
 
-        gltf.scene.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.isMesh) {
-            child.material = keyMat;
-            if (child.name === "plate" || child.name === "switch") child.material = baseMat;
-            if (child.name === "pcb") child.material = pcbMat;
-            if (child.name === "usb") child.material = usbMat;
-          }
-        });
-        switchMesh.rotation.y = keysGroup.rotation.y = gltf.scene.rotation.y = rotation;
-        scene.add(switchMesh, keysGroup, gltf.scene);
+        switchMesh.rotation.y = keysGroup.rotation.y = rotation;
+        scene.add(switchMesh, keysGroup);
       });
 
       // Resize Handler
@@ -298,8 +300,8 @@ const { type, keyboard } = Astro.props;
   function render() {
     if (switchMesh) {
       let i = 0;
-      for (let x = 0; x < mx.x.length; x++) {
-        switch3DMap.position.set(mx.x[i], mx.y[i], mx.z[i]);
+      for (let x = 0; x < mx.length; x++) {
+        switch3DMap.position.set(mx[i].x, mx[i].y, mx[i].z);
         switch3DMap.updateMatrix();
 
         keysGroup.children.forEach((mesh) => {
