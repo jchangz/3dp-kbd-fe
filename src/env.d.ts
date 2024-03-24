@@ -13,8 +13,8 @@ interface threeObj {
   rows: rowsObj;
 }
 interface keyboardObj {
-  [index: string]: {
-    left: threeObj;
-    right: threeObj;
+  [key: string]: {
+    left: { [key: string]: threeObj };
+    right: { [key: string]: threeObj };
   };
 }

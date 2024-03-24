@@ -212,7 +212,12 @@ const { type, keyboard } = Astro.props;
       // Load Models
 
       const keyboardName = canvas.dataset.keyboard || "";
-      ({ left, right } = (three as keyboardObj)[keyboardName]);
+      const keyboardJSON = (three as keyboardObj)[keyboardName];
+      const leftJSON = Object.keys(keyboardJSON.left);
+      const rightJSON = Object.keys(keyboardJSON.right);
+      left = keyboardJSON.left[leftJSON[0]];
+      right = keyboardJSON.right[rightJSON[0]];
+
       const keyboardModelSrc = `/models/${keyboardName}.glb`;
       const caseModelSrc = `/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
 
@@ -241,7 +246,7 @@ const { type, keyboard } = Astro.props;
           }
         });
         gltf.scene.rotation.y = rotation;
-        scene.add(switchMesh, keysGroup, gltf.scene);
+        // scene.add(gltf.scene);
       });
 
       // Keycap & Switch Loader
