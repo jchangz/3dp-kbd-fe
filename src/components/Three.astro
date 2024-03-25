@@ -213,11 +213,24 @@ const { type, keyboard } = Astro.props;
 
       const keyboardName = canvas.dataset.keyboard || "";
       const keyboardJSON = (three as keyboardObj)[keyboardName];
+      const optionsJSON = three.options;
+
       const leftJSON = Object.keys(keyboardJSON.left);
       const rightJSON = Object.keys(keyboardJSON.right);
       left = keyboardJSON.left[leftJSON[0]];
       right = keyboardJSON.right[rightJSON[0]];
 
+      if (keyboardName === "kbo") {
+        const extraLeft = optionsJSON.left["blocker-1"];
+        const extraRight = optionsJSON.right["blocker-1"];
+        const extraShift = optionsJSON.shift["175"];
+
+        left.mx = [...left.mx, ...extraLeft.mx];
+        left.rows = { ...left.rows, ...extraLeft.rows };
+        right.mx[42] = extraShift;
+        right.mx = [...right.mx, ...extraRight.mx];
+        right.rows = { ...right.rows, ...extraRight.rows };
+      }
       const keyboardModelSrc = `/models/${keyboardName}.glb`;
       const caseModelSrc = `/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
 
