@@ -28,17 +28,29 @@ const { type, keyboard } = Astro.props;
   let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, controls: OrbitControls;
   let left: threeObj, right: threeObj;
 
+  // Main container for left/right group, to be rotated in scene
+  const mainGroup = new THREE.Group();
+  const rotation = Math.PI / 2;
+
+  // Parent container to be rotated for mounting
+  const leftPivotGroup = new THREE.Group();
+  const rightPivotGroup = new THREE.Group();
+
+  // Container holding keycaps, case & switches
   const leftGroup = new THREE.Group();
+  leftGroup.name = "left";
+  const rightGroup = new THREE.Group();
+  rightGroup.name = "right";
+
+  // Container holding keycap instanced meshes
   const keysGroupLeft = new THREE.Group();
+  leftGroup.add(keysGroupLeft);
   let leftSwitchMesh: THREE.InstancedMesh;
   const leftSwitch3DMap = new THREE.Object3D();
-
-  const rightGroup = new THREE.Group();
   const keysGroupRight = new THREE.Group();
+  rightGroup.add(keysGroupRight);
   let rightSwitchMesh: THREE.InstancedMesh;
   const rightSwitch3DMap = new THREE.Object3D();
-
-  const rotation = Math.PI / 2;
 
   init();
   animate();
@@ -235,6 +247,7 @@ const { type, keyboard } = Astro.props;
       const caseModelSrc = `/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
 
       loader.load(caseModelSrc, function (gltf) {
+        const files: THREE.Group[] = [];
         gltf.scene.traverse((child) => {
           if (child.name === "Scene") {
             child.rotation.y = rotation;
@@ -242,12 +255,18 @@ const { type, keyboard } = Astro.props;
             centerBox.getCenter(centerVector);
           }
           if (child instanceof THREE.Mesh && child.isMesh) {
+            child.castShadow = true;
             if (child.name.includes("_1")) child.material = caseMat;
             else child.material = faceMat;
           }
-          child.castShadow = true;
+          if (child instanceof THREE.Group && child.name === "left") files.push(child);
+          if (child instanceof THREE.Group && child.name === "right") files.push(child);
         });
-        scene.add(gltf.scene);
+
+        for (var i = 0, n = files.length; i < n; i++) {
+          if (files[i].name === "left") leftGroup.add(files[i]);
+          if (files[i].name === "right") rightGroup.add(files[i]);
+        }
       });
       loader.load(keyboardModelSrc, function (gltf) {
         gltf.scene.traverse((child) => {
@@ -270,8 +289,10 @@ const { type, keyboard } = Astro.props;
         if (_switchMesh instanceof THREE.Mesh) {
           leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, left.mx.length);
           leftSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          leftGroup.add(leftSwitchMesh);
           rightSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, right.mx.length);
           rightSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          rightGroup.add(rightSwitchMesh);
         }
 
         // Create instanced mesh for all left keycaps
@@ -295,8 +316,14 @@ const { type, keyboard } = Astro.props;
           }
         });
 
-        leftSwitchMesh.rotation.y = keysGroupLeft.rotation.y = rightSwitchMesh.rotation.y = keysGroupRight.rotation.y = rotation;
-        scene.add(leftSwitchMesh, keysGroupLeft, rightSwitchMesh, keysGroupRight);
+        setRotation(leftGroup, leftPivotGroup, 25, 1);
+        setRotation(rightGroup, rightPivotGroup, 25, -1);
+
+        leftPivotGroup.add(leftGroup);
+        rightPivotGroup.add(rightGroup);
+        mainGroup.add(leftPivotGroup, rightPivotGroup);
+        mainGroup.rotation.y = rotation;
+        scene.add(mainGroup);
       });
 
       // Resize Handler
@@ -304,6 +331,19 @@ const { type, keyboard } = Astro.props;
       const debounceResize = debounce(onWindowResize, 250);
       window.addEventListener("resize", debounceResize);
     }
+  }
+
+  function setRotation(groupObj: THREE.Group, pivotGroup: THREE.Group, rotation: number, direction: number) {
+    const bbox = new THREE.Box3().setFromObject(groupObj);
+    bbox.getCenter(groupObj.position);
+    groupObj.position.multiplyScalar(-1);
+
+    const xShift = (Math.abs(bbox.max.x) + Math.abs(bbox.min.x)) / 2;
+    const yShift = (Math.abs(bbox.max.y) + Math.abs(bbox.min.y)) / 2;
+
+    groupObj.position.set(groupObj.position.x + direction * xShift, -groupObj.position.y - yShift, -groupObj.position.z);
+    pivotGroup.position.set(-groupObj.position.x, -groupObj.position.y, groupObj.position.z);
+    pivotGroup.rotation.z = (direction * Math.PI) / rotation;
   }
 
   function setCameraFOV() {
