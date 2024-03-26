@@ -316,11 +316,15 @@ const { type, keyboard } = Astro.props;
           }
         });
 
-        setRotation(leftGroup, leftPivotGroup, 25, 1);
-        setRotation(rightGroup, rightPivotGroup, 25, -1);
-
+        setPivotPoint(leftGroup, leftPivotGroup, 1);
+        setPivotPoint(rightGroup, rightPivotGroup, -1);
+        
         leftPivotGroup.add(leftGroup);
         rightPivotGroup.add(rightGroup);
+
+        // leftPivotGroup.rotation.z = MathUtils.degToRad(0);
+        // rightPivotGroup.rotation.z = - MathUtils.degToRad(0);
+
         mainGroup.add(leftPivotGroup, rightPivotGroup);
         mainGroup.rotation.y = rotation;
         scene.add(mainGroup);
@@ -333,7 +337,7 @@ const { type, keyboard } = Astro.props;
     }
   }
 
-  function setRotation(groupObj: THREE.Group, pivotGroup: THREE.Group, rotation: number, direction: number) {
+  function setPivotPoint(groupObj: THREE.Group, pivotGroup: THREE.Group, direction: number) {
     const bbox = new THREE.Box3().setFromObject(groupObj);
     bbox.getCenter(groupObj.position);
     groupObj.position.multiplyScalar(-1);
@@ -343,7 +347,6 @@ const { type, keyboard } = Astro.props;
 
     groupObj.position.set(groupObj.position.x + direction * xShift, -groupObj.position.y - yShift, -groupObj.position.z);
     pivotGroup.position.set(-groupObj.position.x, -groupObj.position.y, groupObj.position.z);
-    pivotGroup.rotation.z = (direction * Math.PI) / rotation;
   }
 
   function setCameraFOV() {
