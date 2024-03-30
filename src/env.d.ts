@@ -18,3 +18,9 @@ interface keyboardObj {
     right: { [key: string]: threeObj };
   };
 }
+interface geometryObj {
+  [key: string]: {
+    left: { [key: string]: number[][] };
+    right: { [key: string]: number[][] };
+  };
+}

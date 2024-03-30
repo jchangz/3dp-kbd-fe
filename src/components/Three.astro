@@ -24,6 +24,7 @@ const { type, keyboard } = Astro.props;
   import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
   import { MathUtils } from "three";
   import { three } from "../assets/three.json";
+  import { geometry } from "../assets/geometry.json";
 
   let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, controls: OrbitControls;
   let left: threeObj, right: threeObj;
@@ -65,6 +66,8 @@ const { type, keyboard } = Astro.props;
     const envMapIntensity = 2;
 
     if (canvas) {
+      const keyboardName = canvas.dataset.keyboard || "";
+
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -221,9 +224,17 @@ const { type, keyboard } = Astro.props;
       shadowPlane.receiveShadow = true;
       scene.add(shadowPlane);
 
+      // Create Plate Mesh
+
+      const platesJSON = (geometry as geometryObj)[keyboardName];
+      const { left: leftPlate, right: rightPlate } = platesJSON;
+      const leftPlateMesh = createPlates(leftPlate.macro, baseMat);
+      const rightPlateMesh = createPlates(rightPlate.base, baseMat);
+      leftGroup.add(leftPlateMesh);
+      rightGroup.add(rightPlateMesh);
+
       // Load Models
 
-      const keyboardName = canvas.dataset.keyboard || "";
       const keyboardJSON = (three as keyboardObj)[keyboardName];
       const optionsJSON = three.options;
 
@@ -318,7 +329,7 @@ const { type, keyboard } = Astro.props;
 
         setPivotPoint(leftGroup, leftPivotGroup, 1);
         setPivotPoint(rightGroup, rightPivotGroup, -1);
-        
+
         leftPivotGroup.add(leftGroup);
         rightPivotGroup.add(rightGroup);
 
@@ -335,6 +346,19 @@ const { type, keyboard } = Astro.props;
       const debounceResize = debounce(onWindowResize, 250);
       window.addEventListener("resize", debounceResize);
     }
+  }
+
+  function createPlates(coordinates: number[][], material: THREE.Material) {
+    const coordinatePts = coordinates.map((pt) => new THREE.Vector2(pt[0], pt[1]));
+    const shape = new THREE.Shape(coordinatePts);
+    const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.016, bevelEnabled: false });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.scale.set(1, 1, -1);
+    mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
+    mesh.position.y = 0.1762;
+
+    return mesh;
   }
 
   function setPivotPoint(groupObj: THREE.Group, pivotGroup: THREE.Group, direction: number) {
