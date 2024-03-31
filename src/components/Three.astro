@@ -53,6 +53,38 @@ const { type, keyboard } = Astro.props;
   let rightSwitchMesh: THREE.InstancedMesh;
   const rightSwitch3DMap = new THREE.Object3D();
 
+  // Materials
+  const envMapIntensity = 2;
+  const caseMat = new THREE.MeshStandardMaterial({
+    roughness: 0.8,
+    envMapIntensity: envMapIntensity,
+  });
+  const faceMat = new THREE.MeshStandardMaterial({
+    roughness: 0.4,
+    envMapIntensity: envMapIntensity,
+  });
+  const keyMat = new THREE.MeshStandardMaterial({
+    color: 0x171718,
+    roughness: 0.5,
+    envMapIntensity: envMapIntensity,
+  });
+  const baseMat = new THREE.MeshStandardMaterial({
+    color: 0x171718,
+    roughness: 0.3,
+    envMapIntensity: envMapIntensity,
+  });
+  const pcbMat = new THREE.MeshStandardMaterial({
+    color: 0x046307,
+    roughness: 0.8,
+    envMapIntensity: envMapIntensity,
+  });
+  const usbMat = new THREE.MeshStandardMaterial({
+    metalness: 1,
+    roughness: 0.2,
+    envMapIntensity: envMapIntensity,
+  });
+  caseMat.color = faceMat.color = new THREE.Color(0x171718);
+
   init();
   animate();
 
@@ -62,8 +94,6 @@ const { type, keyboard } = Astro.props;
 
     const centerVector = new THREE.Vector3(),
       centerBox = new THREE.Box3();
-
-    const envMapIntensity = 2;
 
     if (canvas) {
       const keyboardName = canvas.dataset.keyboard || "";
@@ -91,38 +121,6 @@ const { type, keyboard } = Astro.props;
 
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
       pmremGenerator.compileEquirectangularShader();
-
-      // Materials
-
-      const caseMat = new THREE.MeshStandardMaterial({
-        roughness: 0.8,
-        envMapIntensity: envMapIntensity,
-      });
-      const faceMat = new THREE.MeshStandardMaterial({
-        roughness: 0.4,
-        envMapIntensity: envMapIntensity,
-      });
-      const keyMat = new THREE.MeshStandardMaterial({
-        color: 0x171718,
-        roughness: 0.5,
-        envMapIntensity: envMapIntensity,
-      });
-      const baseMat = new THREE.MeshStandardMaterial({
-        color: 0x171718,
-        roughness: 0.3,
-        envMapIntensity: envMapIntensity,
-      });
-      const pcbMat = new THREE.MeshStandardMaterial({
-        color: 0x046307,
-        roughness: 0.8,
-        envMapIntensity: envMapIntensity,
-      });
-      const usbMat = new THREE.MeshStandardMaterial({
-        metalness: 1,
-        roughness: 0.2,
-        envMapIntensity: envMapIntensity,
-      });
-      caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
       // GUI
 
@@ -228,8 +226,8 @@ const { type, keyboard } = Astro.props;
 
       const platesJSON = (geometry as geometryObj)[keyboardName];
       const { left: leftPlate, right: rightPlate } = platesJSON;
-      const leftPlateMesh = createPlates(leftPlate.macro, baseMat);
-      const rightPlateMesh = createPlates(rightPlate.base, baseMat);
+      const leftPlateMesh = createPlates(leftPlate.macro);
+      const rightPlateMesh = createPlates(rightPlate.base);
       leftGroup.add(leftPlateMesh);
       rightGroup.add(rightPlateMesh);
 
@@ -348,12 +346,12 @@ const { type, keyboard } = Astro.props;
     }
   }
 
-  function createPlates(coordinates: number[][], material: THREE.Material) {
+  function createPlates(coordinates: number[][]) {
     const coordinatePts = coordinates.map((pt) => new THREE.Vector2(pt[0], pt[1]));
     const shape = new THREE.Shape(coordinatePts);
     const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.016, bevelEnabled: false });
 
-    const mesh = new THREE.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, baseMat);
     mesh.scale.set(1, 1, -1);
     mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
     mesh.position.y = 0.1762;
