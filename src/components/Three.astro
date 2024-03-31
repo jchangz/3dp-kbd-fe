@@ -28,6 +28,7 @@ const { type, keyboard } = Astro.props;
 
   let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, controls: OrbitControls;
   let left: threeObj, right: threeObj;
+  let changed = false;
 
   // Main container for left/right group, to be rotated in scene
   const mainGroup = new THREE.Group();
@@ -85,6 +86,8 @@ const { type, keyboard } = Astro.props;
   });
   caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
+  const onChange = () => (changed = true);
+
   init();
   animate();
 
@@ -118,6 +121,7 @@ const { type, keyboard } = Astro.props;
       // controls.autoRotate = true;
       controls.minDistance = 100;
       controls.maxDistance = 200;
+      controls.addEventListener("change", onChange);
 
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
       pmremGenerator.compileEquirectangularShader();
@@ -134,9 +138,11 @@ const { type, keyboard } = Astro.props;
       canvas.appendChild(gui.domElement);
       gui.addColor(params, "case").onChange(function (val) {
         caseMat.color.setHex(val);
+        changed = true;
       });
       gui.addColor(params, "keycap").onChange(function (val) {
         keyMat.color.setHex(val);
+        changed = true;
       });
       gui.open();
 
@@ -394,12 +400,16 @@ const { type, keyboard } = Astro.props;
 
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      changed = true;
     }
   }
 
   function animate() {
     requestAnimationFrame(animate);
-    render();
+    if (controls.update() || changed) {
+      render();
+      changed = false;
+    }
   }
 
   function render() {
