@@ -308,9 +308,7 @@ const { type, keyboard } = Astro.props;
         Object.keys(left.rows).forEach((row) => {
           const _keycapMesh = gltf.scene.getObjectByName(row);
           if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-            const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, left.rows[row].length);
-            keycapMesh.name = row;
-            keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            const { keycapMesh } = createKeycaps(_keycapMesh, row, left.rows[row].length);
             keysGroupLeft.add(keycapMesh);
           }
         });
@@ -318,9 +316,7 @@ const { type, keyboard } = Astro.props;
         Object.keys(right.rows).forEach((row) => {
           const _keycapMesh = gltf.scene.getObjectByName(row);
           if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-            const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, right.rows[row].length);
-            keycapMesh.name = row;
-            keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            const { keycapMesh } = createKeycaps(_keycapMesh, row, right.rows[row].length);
             keysGroupRight.add(keycapMesh);
           }
         });
@@ -344,6 +340,13 @@ const { type, keyboard } = Astro.props;
       const debounceResize = debounce(onWindowResize, 250);
       window.addEventListener("resize", debounceResize);
     }
+  }
+
+  function createKeycaps(_keycapMesh: THREE.Mesh, name: string, length: number) {
+    const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, length);
+    keycapMesh.name = name;
+    keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    return { keycapMesh };
   }
 
   function createPlates(coordinates: number[][]) {
