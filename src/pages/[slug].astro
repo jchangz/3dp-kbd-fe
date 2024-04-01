@@ -11,6 +11,7 @@ interface Props {
   caseType: string;
   leftOptions: configOptionsObj[];
   rightOptions: configOptionsObj[];
+  shiftOptions: configOptionsObj[];
 }
 
 export async function getStaticPaths() {
@@ -24,14 +25,14 @@ export async function getStaticPaths() {
     };
   });
   return pages.map(({ slug, title, kbdType, caseType }) => {
-    const { left: leftOptions, right: rightOptions } = (config as configObj)[kbdType];
+    const { left: leftOptions, right: rightOptions, shift: shiftOptions } = (config as configObj)[kbdType];
     return {
       params: { slug },
-      props: { title, kbdType, caseType, leftOptions, rightOptions },
+      props: { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions },
     };
   });
 }
-const { title, kbdType, caseType, leftOptions, rightOptions } = Astro.props;
+const { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions } = Astro.props;
 ---
 
 <Layout title={title}>
@@ -64,5 +65,23 @@ const { title, kbdType, caseType, leftOptions, rightOptions } = Astro.props;
         }
       </fieldset>
     </form>
+    <>
+    {
+      kbdType === 'kbo' ? 
+      <form id="right-shift">
+        <fieldset>
+        <legend>Right Shift:</legend>
+        {
+          shiftOptions.map((opt) => (
+            <div>
+              <input type="radio" id={opt.value} data-type={opt["data-type"]} name="right" value={opt.value} checked={opt.default} />
+              <label for={opt.value}>{opt.title}</label>
+            </div>
+          ))
+        }
+      </fieldset></form> 
+      : <></>
+    }
+    </>
   </div>
 </Layout>

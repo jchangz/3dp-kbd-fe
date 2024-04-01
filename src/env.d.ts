@@ -24,6 +24,11 @@ interface geometryObj {
     right: { [key: string]: number[][] };
   };
 }
+interface kboOptions {
+  left: { [key: string]: threeObj };
+  right: { [key: string]: threeObj };
+  shift: { [key: string]: mxObj };
+}
 interface configOptionsObj {
   title: string;
   "data-type": string;
@@ -34,5 +39,6 @@ interface configObj {
   [key: string]: {
     left: configOptionsObj[];
     right: configOptionsObj[];
+    shift?: configOptionsObj[];
   };
 }

@@ -64,28 +64,51 @@
     "kbo": {
       "left": [
         {
-          "title": "Macro",
-          "data-type": "macro",
-          "value": "macro",
+          "title": "No Blocker",
+          "data-type": "blocker",
+          "value": "no-blocker",
           "default": true
         },
         {
-          "title": "No Macro",
-          "data-type": "macro",
-          "value": "no-macro"
+          "title": "Blocker 1",
+          "data-type": "blocker",
+          "value": "blocker-1"
+        },
+        {
+          "title": "Blocker 2",
+          "data-type": "blocker",
+          "value": "blocker-2"
         }
       ],
       "right": [
         {
-          "title": "Blocker",
+          "title": "No Blocker",
           "data-type": "blocker",
-          "value": "blocker",
+          "value": "no-blocker",
           "default": true
         },
         {
-          "title": "No Blocker",
+          "title": "Blocker 1",
           "data-type": "blocker",
-          "value": "no-blocker"
+          "value": "blocker-1"
+        },
+        {
+          "title": "Blocker 2",
+          "data-type": "blocker",
+          "value": "blocker-2"
+        }
+      ],
+      "shift": [
+        {
+          "title": "1.75",
+          "data-type": "shift",
+          "value": "175",
+          "default": true
+        },
+        {
+          "title": "2.75",
+          "data-type": "shift",
+          "value": "275"
         }
       ]
     }

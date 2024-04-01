@@ -96,7 +96,7 @@ const { type, keyboard } = Astro.props;
     canvas = document.querySelector(".canvas");
     scene = new THREE.Scene();
 
-        const centerVector = new THREE.Vector3(),
+    const centerVector = new THREE.Vector3(),
       centerBox = new THREE.Box3();
 
     const leftDefault = document.querySelector("#left-options input:checked") as HTMLInputElement,
@@ -104,7 +104,8 @@ const { type, keyboard } = Astro.props;
       leftDefaultValue = leftDefault?.value,
       rightDefault = document.querySelector("#right-options input:checked") as HTMLInputElement,
       rightDefaultType = rightDefault?.dataset.type,
-      rightDefaultValue = rightDefault?.value;
+      rightDefaultValue = rightDefault?.value,
+      rightShift = document.querySelector("#right-shift input:checked") as HTMLInputElement;
 
     if (canvas) {
       keyboardName = canvas.dataset.keyboard || "";
@@ -244,21 +245,24 @@ const { type, keyboard } = Astro.props;
       // Load Models
 
       const keyboardJSON = (three as keyboardObj)[keyboardName];
-      const optionsJSON = three.options;
-
-      left = keyboardJSON.left[leftDefaultValue];
-      right = keyboardJSON.right[rightDefaultValue];
+      const optionsJSON = three.options as kboOptions;
 
       if (keyboardName === "kbo") {
-        const extraLeft = optionsJSON.left["blocker-1"];
-        const extraRight = optionsJSON.right["blocker-1"];
-        const extraShift = optionsJSON.shift["175"];
+        left = keyboardJSON.left.base;
+        right = keyboardJSON.right.base;
+
+        const extraLeft = optionsJSON.left[leftDefaultValue];
+        const extraRight = optionsJSON.right[rightDefaultValue];
+        const extraShift = optionsJSON.shift[rightShift?.value];
 
         left.mx = [...left.mx, ...extraLeft.mx];
         left.rows = { ...left.rows, ...extraLeft.rows };
         right.mx[42] = extraShift;
         right.mx = [...right.mx, ...extraRight.mx];
         right.rows = { ...right.rows, ...extraRight.rows };
+      } else {
+        left = keyboardJSON.left[leftDefaultValue];
+        right = keyboardJSON.right[rightDefaultValue];
       }
       const keyboardModelSrc = `/models/${keyboardName}.glb`;
       const caseModelSrc = `/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
@@ -323,7 +327,7 @@ const { type, keyboard } = Astro.props;
         scene.add(mainGroup);
       });
 
-            // Resize Handler
+      // Resize Handler
 
       const debounceResize = debounce(onWindowResize, 250);
       window.addEventListener("resize", debounceResize);
@@ -457,7 +461,7 @@ const { type, keyboard } = Astro.props;
 
   function animate() {
     requestAnimationFrame(animate);
-        if (controls.update() || changed) {
+    if (controls.update() || changed) {
       render();
       changed = false;
     }
