@@ -98,7 +98,14 @@ const { type, keyboard } = Astro.props;
 
         const centerVector = new THREE.Vector3(),
       centerBox = new THREE.Box3();
-      
+
+    const leftDefault = document.querySelector("#left-options input:checked") as HTMLInputElement,
+      leftDefaultType = leftDefault?.dataset.type,
+      leftDefaultValue = leftDefault?.value,
+      rightDefault = document.querySelector("#right-options input:checked") as HTMLInputElement,
+      rightDefaultType = rightDefault?.dataset.type,
+      rightDefaultValue = rightDefault?.value;
+
     if (canvas) {
       keyboardName = canvas.dataset.keyboard || "";
 
@@ -231,18 +238,16 @@ const { type, keyboard } = Astro.props;
 
       // Create Plate Mesh
 
-      createPlates("left", "macro");
-      createPlates("right", "base");
+      createPlates("left", leftDefaultType === "macro" ? leftDefaultValue : "base");
+      createPlates("right", rightDefaultType === "macro" ? rightDefaultType : "base");
 
       // Load Models
 
       const keyboardJSON = (three as keyboardObj)[keyboardName];
       const optionsJSON = three.options;
 
-      const leftJSON = Object.keys(keyboardJSON.left);
-      const rightJSON = Object.keys(keyboardJSON.right);
-      left = keyboardJSON.left[leftJSON[0]];
-      right = keyboardJSON.right[rightJSON[0]];
+      left = keyboardJSON.left[leftDefaultValue];
+      right = keyboardJSON.right[rightDefaultValue];
 
       if (keyboardName === "kbo") {
         const extraLeft = optionsJSON.left["blocker-1"];
