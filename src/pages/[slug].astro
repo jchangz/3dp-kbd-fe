@@ -2,12 +2,15 @@
 import Layout from "../layouts/Layout.astro";
 import Three from "../components/Three.astro";
 import json from "../assets/routes.json";
+import { config } from "../assets/config.json";
 
 interface Props {
   slug: string;
   title: string;
   kbdType: string;
   caseType: string;
+  leftOptions: configOptionsObj[];
+  rightOptions: configOptionsObj[];
 }
 
 export async function getStaticPaths() {
@@ -21,20 +24,45 @@ export async function getStaticPaths() {
     };
   });
   return pages.map(({ slug, title, kbdType, caseType }) => {
+    const { left: leftOptions, right: rightOptions } = (config as configObj)[kbdType];
     return {
       params: { slug },
-      props: { title, kbdType, caseType },
+      props: { title, kbdType, caseType, leftOptions, rightOptions },
     };
   });
 }
-const { title, kbdType, caseType } = Astro.props;
+const { title, kbdType, caseType, leftOptions, rightOptions } = Astro.props;
 ---
 
 <Layout title={title}>
-  <div class="col-start-2">
-    <div class="fixed">
-      <p>{title}</p>
-    </div>
-  </div>
   <Three type={caseType} keyboard={kbdType} />
+  <div class="absolute top-8">
+    <p class="">{title}</p>
+    <form id="left-options">
+      <fieldset>
+        <legend>Left Options:</legend>
+        {
+          leftOptions.map((opt) => (
+            <div>
+              <input type="radio" id={opt.value} name={opt["data-name"]} value={opt.value} checked={opt.default} />
+              <label for={opt.value}>{opt.name}</label>
+            </div>
+          ))
+        }
+      </fieldset>
+    </form>
+    <form id="right-options">
+      <fieldset>
+        <legend>Right Options:</legend>
+        {
+          rightOptions.map((opt) => (
+            <div>
+              <input type="radio" id={opt.value} name={opt["data-name"]} value={opt.value} checked={opt.default} />
+              <label for={opt.value}>{opt.name}</label>
+            </div>
+          ))
+        }
+      </fieldset>
+    </form>
+  </div>
 </Layout>

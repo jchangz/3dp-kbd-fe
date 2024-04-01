@@ -24,3 +24,15 @@ interface geometryObj {
     right: { [key: string]: number[][] };
   };
 }
+interface configOptionsObj {
+  name: string;
+  "data-name": string;
+  value: string;
+  default: boolean;
+}
+interface configObj {
+  [key: string]: {
+    left: configOptionsObj[];
+    right: configOptionsObj[];
+  };
+}

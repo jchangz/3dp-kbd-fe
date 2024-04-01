@@ -1,0 +1,93 @@
+{
+  "config": {
+    "quefrency": {
+      "left": [
+        {
+          "name": "Macro",
+          "data-name": "macro",
+          "value": "macro"
+        },
+        {
+          "name": "No Macro",
+          "data-name": "macro",
+          "value": "no-macro",
+          "default": true
+        }
+      ],
+      "right": [
+        {
+          "name": "65+Blocker",
+          "data-name": "blocker",
+          "value": "65-b",
+          "default": true
+        },
+        {
+          "name": "65",
+          "data-name": "blocker",
+          "value": "65"
+        },
+        {
+          "name": "60",
+          "data-name": "macro",
+          "value": "60"
+        }
+      ]
+    },
+    "sinc": {
+      "left": [
+        {
+          "name": "Macro",
+          "data-name": "macro",
+          "value": "macro",
+          "default": true
+        },
+        {
+          "name": "No Macro",
+          "data-name": "macro",
+          "value": "no-macro"
+        }
+      ],
+      "right": [
+        {
+          "name": "Blocker",
+          "data-name": "blocker",
+          "value": "blocker",
+          "default": true
+        },
+        {
+          "name": "No Blocker",
+          "data-name": "blocker",
+          "value": "no-blocker"
+        }
+      ]
+    },
+    "kbo": {
+      "left": [
+        {
+          "name": "Macro",
+          "data-name": "macro",
+          "value": "macro",
+          "default": true
+        },
+        {
+          "name": "No Macro",
+          "data-name": "macro",
+          "value": "no-macro"
+        }
+      ],
+      "right": [
+        {
+          "name": "Blocker",
+          "data-name": "blocker",
+          "value": "blocker",
+          "default": true
+        },
+        {
+          "name": "No Blocker",
+          "data-name": "blocker",
+          "value": "no-blocker"
+        }
+      ]
+    }
+  }
+}
