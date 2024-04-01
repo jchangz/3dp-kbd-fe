@@ -25,8 +25,8 @@ interface geometryObj {
   };
 }
 interface configOptionsObj {
-  name: string;
-  "data-name": string;
+  title: string;
+  "data-type": string;
   value: string;
   default: boolean;
 }

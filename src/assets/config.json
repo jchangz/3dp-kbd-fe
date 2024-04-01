@@ -3,32 +3,32 @@
     "quefrency": {
       "left": [
         {
-          "name": "Macro",
-          "data-name": "macro",
+          "title": "Macro",
+          "data-type": "macro",
           "value": "macro"
         },
         {
-          "name": "No Macro",
-          "data-name": "macro",
+          "title": "No Macro",
+          "data-type": "macro",
           "value": "no-macro",
           "default": true
         }
       ],
       "right": [
         {
-          "name": "65+Blocker",
-          "data-name": "blocker",
+          "title": "65+Blocker",
+          "data-type": "blocker",
           "value": "65-b",
           "default": true
         },
         {
-          "name": "65",
-          "data-name": "blocker",
+          "title": "65",
+          "data-type": "blocker",
           "value": "65"
         },
         {
-          "name": "60",
-          "data-name": "macro",
+          "title": "60",
+          "data-type": "macro",
           "value": "60"
         }
       ]
@@ -36,27 +36,27 @@
     "sinc": {
       "left": [
         {
-          "name": "Macro",
-          "data-name": "macro",
+          "title": "Macro",
+          "data-type": "macro",
           "value": "macro",
           "default": true
         },
         {
-          "name": "No Macro",
-          "data-name": "macro",
+          "title": "No Macro",
+          "data-type": "macro",
           "value": "no-macro"
         }
       ],
       "right": [
         {
-          "name": "Blocker",
-          "data-name": "blocker",
+          "title": "Blocker",
+          "data-type": "blocker",
           "value": "blocker",
           "default": true
         },
         {
-          "name": "No Blocker",
-          "data-name": "blocker",
+          "title": "No Blocker",
+          "data-type": "blocker",
           "value": "no-blocker"
         }
       ]
@@ -64,27 +64,27 @@
     "kbo": {
       "left": [
         {
-          "name": "Macro",
-          "data-name": "macro",
+          "title": "Macro",
+          "data-type": "macro",
           "value": "macro",
           "default": true
         },
         {
-          "name": "No Macro",
-          "data-name": "macro",
+          "title": "No Macro",
+          "data-type": "macro",
           "value": "no-macro"
         }
       ],
       "right": [
         {
-          "name": "Blocker",
-          "data-name": "blocker",
+          "title": "Blocker",
+          "data-type": "blocker",
           "value": "blocker",
           "default": true
         },
         {
-          "name": "No Blocker",
-          "data-name": "blocker",
+          "title": "No Blocker",
+          "data-type": "blocker",
           "value": "no-blocker"
         }
       ]
