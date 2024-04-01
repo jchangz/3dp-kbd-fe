@@ -299,33 +299,13 @@ const { type, keyboard } = Astro.props;
       // Keycap & Switch Loader
 
       loader.load("models/switch.glb", function (gltf) {
-        // Create instanced mesh for mx switch
-        const _switchMesh = gltf.scene.getObjectByName("switch");
-        if (_switchMesh instanceof THREE.Mesh) {
-          leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, left.mx.length);
-          leftSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-          leftGroup.add(leftSwitchMesh);
-          rightSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, right.mx.length);
-          rightSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-          rightGroup.add(rightSwitchMesh);
-        }
+        gltf.scene.visible = false;
+        scene.add(gltf.scene);
 
-        // Create instanced mesh for all left keycaps
-        Object.keys(left.rows).forEach((row) => {
-          const _keycapMesh = gltf.scene.getObjectByName(row);
-          if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-            const { keycapMesh } = createKeycaps(_keycapMesh, row, left.rows[row].length);
-            keysGroupLeft.add(keycapMesh);
-          }
-        });
-        // Create instanced mesh for all right keycaps
-        Object.keys(right.rows).forEach((row) => {
-          const _keycapMesh = gltf.scene.getObjectByName(row);
-          if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-            const { keycapMesh } = createKeycaps(_keycapMesh, row, right.rows[row].length);
-            keysGroupRight.add(keycapMesh);
-          }
-        });
+        createSwitchMesh("left");
+        createSwitchMesh("right");
+        createKeycaps("left");
+        createKeycaps("right");
 
         setPivotPoint(leftGroup, leftPivotGroup, 1);
         setPivotPoint(rightGroup, rightPivotGroup, -1);
@@ -348,11 +328,59 @@ const { type, keyboard } = Astro.props;
     }
   }
 
-  function createKeycaps(_keycapMesh: THREE.Mesh, name: string, length: number) {
-    const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, length);
-    keycapMesh.name = name;
-    keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    return { keycapMesh };
+  function createSwitchMesh(side: string) {
+    const _switchMesh = scene.getObjectByName("switch");
+    const group = side === "left" ? leftGroup : rightGroup;
+    const name = `${side}-switches`;
+    const files: THREE.Object3D[] = [];
+
+    group.traverse((child) => {
+      if (child.name === name) {
+        files.push(child);
+        if (child instanceof THREE.InstancedMesh) child.geometry.dispose();
+      }
+    });
+    if (files.length) {
+      for (var i = 0, n = files.length; i < n; i++) {
+        group.remove(files[i]);
+      }
+    }
+    if (_switchMesh instanceof THREE.Mesh) {
+      if (side === "left") {
+        leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, left.mx.length);
+        leftSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        leftSwitchMesh.name = name;
+        leftGroup.add(leftSwitchMesh);
+      }
+      if (side === "right") {
+        rightSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, right.mx.length);
+        rightSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        rightSwitchMesh.name = name;
+        rightGroup.add(rightSwitchMesh);
+      }
+    }
+  }
+
+  function createKeycaps(side: string) {
+    const rowData = side === "left" ? left.rows : right.rows;
+    const keysGroup = side === "left" ? keysGroupLeft : keysGroupRight;
+
+    if (keysGroup.children.length) {
+      keysGroup.children.forEach((mesh) => {
+        if (mesh instanceof THREE.InstancedMesh) mesh.geometry.dispose();
+      });
+      keysGroup.clear();
+    }
+
+    Object.keys(rowData).forEach((row) => {
+      const _keycapMesh = scene.getObjectByName(row);
+      if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
+        const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, rowData[row].length);
+        keycapMesh.name = row;
+        keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        keysGroup.add(keycapMesh);
+      }
+    });
   }
 
   function createPlates(coordinates: number[][]) {
