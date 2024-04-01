@@ -28,6 +28,7 @@ const { type, keyboard } = Astro.props;
 
   let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, controls: OrbitControls;
   let left: threeObj, right: threeObj;
+  let keyboardName: string;
   let changed = false;
 
   // Main container for left/right group, to be rotated in scene
@@ -95,11 +96,11 @@ const { type, keyboard } = Astro.props;
     canvas = document.querySelector(".canvas");
     scene = new THREE.Scene();
 
-    const centerVector = new THREE.Vector3(),
+        const centerVector = new THREE.Vector3(),
       centerBox = new THREE.Box3();
-
+      
     if (canvas) {
-      const keyboardName = canvas.dataset.keyboard || "";
+      keyboardName = canvas.dataset.keyboard || "";
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -230,12 +231,8 @@ const { type, keyboard } = Astro.props;
 
       // Create Plate Mesh
 
-      const platesJSON = (geometry as geometryObj)[keyboardName];
-      const { left: leftPlate, right: rightPlate } = platesJSON;
-      const leftPlateMesh = createPlates(leftPlate.macro);
-      const rightPlateMesh = createPlates(rightPlate.base);
-      leftGroup.add(leftPlateMesh);
-      rightGroup.add(rightPlateMesh);
+      createPlates("left", "macro");
+      createPlates("right", "base");
 
       // Load Models
 
@@ -321,7 +318,7 @@ const { type, keyboard } = Astro.props;
         scene.add(mainGroup);
       });
 
-      // Resize Handler
+            // Resize Handler
 
       const debounceResize = debounce(onWindowResize, 250);
       window.addEventListener("resize", debounceResize);
@@ -383,17 +380,38 @@ const { type, keyboard } = Astro.props;
     });
   }
 
-  function createPlates(coordinates: number[][]) {
-    const coordinatePts = coordinates.map((pt) => new THREE.Vector2(pt[0], pt[1]));
-    const shape = new THREE.Shape(coordinatePts);
-    const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.016, bevelEnabled: false });
+  function createPlates(side: string, type: string) {
+    const data = (geometry as geometryObj)[keyboardName];
+    if (data) {
+      const { left, right } = data;
+      const files: THREE.Object3D[] = [];
+      const group = side === "left" ? leftGroup : rightGroup;
+      const coordinates: number[][] = side === "left" ? left[type] : right[type];
 
-    const mesh = new THREE.Mesh(geometry, baseMat);
-    mesh.scale.set(1, 1, -1);
-    mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
-    mesh.position.y = 0.1762;
+      if (group.children.length) {
+        group.children.forEach((mesh) => {
+          if (mesh instanceof THREE.Mesh && mesh.name === "plate") {
+            files.push(mesh);
+            mesh.geometry.dispose();
+          }
+        });
+        if (files.length) {
+          for (var i = 0, n = files.length; i < n; i++) group.remove(files[i]);
+        }
+      }
 
-    return mesh;
+      const coordinatePts = coordinates.map((pt) => new THREE.Vector2(pt[0], pt[1]));
+      const shape = new THREE.Shape(coordinatePts);
+      const plateGeometry = new THREE.ExtrudeGeometry(shape, { depth: 0.016, bevelEnabled: false });
+
+      const mesh = new THREE.Mesh(plateGeometry, baseMat);
+      mesh.scale.set(1, 1, -1);
+      mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
+      mesh.position.y = 0.1762;
+      mesh.name = "plate";
+
+      group.add(mesh);
+    }
   }
 
   function setPivotPoint(groupObj: THREE.Group, pivotGroup: THREE.Group, direction: number) {
@@ -434,7 +452,7 @@ const { type, keyboard } = Astro.props;
 
   function animate() {
     requestAnimationFrame(animate);
-    if (controls.update() || changed) {
+        if (controls.update() || changed) {
       render();
       changed = false;
     }
