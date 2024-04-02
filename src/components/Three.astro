@@ -92,6 +92,37 @@ const { type, keyboard } = Astro.props;
 
   const onChange = () => (changed = true);
 
+  const leftSideInput = document.getElementById("left-options");
+  const rightSideInput = document.getElementById("right-options");
+  const rightShiftInput = document.getElementById("right-shift");
+
+  leftSideInput?.addEventListener("change", function (e) {
+    if (e.target instanceof HTMLInputElement) {
+      if (keyboardName === "kbo") createKBOData("left", e.target.value);
+      else left = keyboardJSON.left[e.target.value];
+      createPlates("left", e.target.value);
+      createSwitchMesh("left");
+      createKeycaps("left");
+      changed = true;
+    }
+  });
+  rightSideInput?.addEventListener("change", function (e) {
+    if (e.target instanceof HTMLInputElement) {
+      if (keyboardName === "kbo") createKBOData("right", e.target.value);
+      else right = keyboardJSON.right[e.target.value];
+      createSwitchMesh("right");
+      createKeycaps("right");
+      changed = true;
+    }
+  });
+  rightShiftInput?.addEventListener("change", function (e) {
+    if (e.target instanceof HTMLInputElement) {
+      rightShift = e.target.value;
+      updateRightShift();
+      changed = true;
+    }
+  });
+
   init();
   animate();
 
@@ -478,7 +509,7 @@ const { type, keyboard } = Astro.props;
 
   function animate() {
     requestAnimationFrame(animate);
-    if (controls.update() || changed) {
+        if (controls.update() || changed) {
       render();
       changed = false;
     }
