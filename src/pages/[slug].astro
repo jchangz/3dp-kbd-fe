@@ -45,8 +45,8 @@ const { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions } = As
         {
           leftOptions.map((opt) => (
             <div>
-              <input type="radio" id={opt.value} data-type={opt["data-type"]} name="left" value={opt.value} checked={opt.default} />
-              <label for={opt.value}>{opt.title}</label>
+              <input type="radio" id={`left-${opt.value}`} data-type={opt["data-type"]} name="left" value={opt.value} checked={opt.default} />
+              <label for={`left-${opt.value}`}>{opt.title}</label>
             </div>
           ))
         }
@@ -58,30 +58,29 @@ const { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions } = As
         {
           rightOptions.map((opt) => (
             <div>
-              <input type="radio" id={opt.value} data-type={opt["data-type"]} name="right" value={opt.value} checked={opt.default} />
-              <label for={opt.value}>{opt.title}</label>
+              <input type="radio" id={`right-${opt.value}`} data-type={opt["data-type"]} name="right" value={opt.value} checked={opt.default} />
+              <label for={`right-${opt.value}`}>{opt.title}</label>
             </div>
           ))
         }
       </fieldset>
     </form>
     <>
-    {
-      kbdType === 'kbo' ? 
-      <form id="right-shift">
-        <fieldset>
-        <legend>Right Shift:</legend>
-        {
-          shiftOptions.map((opt) => (
-            <div>
-              <input type="radio" id={opt.value} data-type={opt["data-type"]} name="right" value={opt.value} checked={opt.default} />
-              <label for={opt.value}>{opt.title}</label>
-            </div>
-          ))
-        }
-      </fieldset></form> 
-      : <></>
-    }
+      {
+        kbdType === "kbo" && (
+          <form id="right-shift">
+            <fieldset>
+              <legend>Right Shift:</legend>
+              {shiftOptions.map((opt) => (
+                <div>
+                  <input type="radio" id={opt.value} data-type={opt["data-type"]} name="right" value={opt.value} checked={opt.default} />
+                  <label for={opt.value}>{opt.title}</label>
+                </div>
+              ))}
+            </fieldset>
+          </form>
+        )
+      }
     </>
   </div>
 </Layout>
