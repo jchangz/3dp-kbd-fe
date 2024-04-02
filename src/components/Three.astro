@@ -29,6 +29,9 @@ const { type, keyboard } = Astro.props;
   let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, controls: OrbitControls;
   let left: threeObj, right: threeObj;
   let keyboardName: string;
+  let keyboardJSON: { [key: string]: { [key: string]: threeObj } };
+  let optionsJSON: kboOptions;
+  let rightShift: string;
   let changed = false;
 
   // Main container for left/right group, to be rotated in scene
@@ -105,7 +108,7 @@ const { type, keyboard } = Astro.props;
       rightDefault = document.querySelector("#right-options input:checked") as HTMLInputElement,
       rightDefaultType = rightDefault?.dataset.type,
       rightDefaultValue = rightDefault?.value,
-      rightShift = document.querySelector("#right-shift input:checked") as HTMLInputElement;
+      rightShiftSelector = document.querySelector("#right-shift input:checked") as HTMLInputElement;
 
     if (canvas) {
       keyboardName = canvas.dataset.keyboard || "";
@@ -244,22 +247,13 @@ const { type, keyboard } = Astro.props;
 
       // Load Models
 
-      const keyboardJSON = (three as keyboardObj)[keyboardName];
-      const optionsJSON = three.options as kboOptions;
+      keyboardJSON = (three as keyboardObj)[keyboardName];
 
       if (keyboardName === "kbo") {
-        left = keyboardJSON.left.base;
-        right = keyboardJSON.right.base;
-
-        const extraLeft = optionsJSON.left[leftDefaultValue];
-        const extraRight = optionsJSON.right[rightDefaultValue];
-        const extraShift = optionsJSON.shift[rightShift?.value];
-
-        left.mx = [...left.mx, ...extraLeft.mx];
-        left.rows = { ...left.rows, ...extraLeft.rows };
-        right.mx[42] = extraShift;
-        right.mx = [...right.mx, ...extraRight.mx];
-        right.rows = { ...right.rows, ...extraRight.rows };
+        optionsJSON = three.options as kboOptions;
+        rightShift = rightShiftSelector.value;
+        createKBOData("left", leftDefaultValue);
+        createKBOData("right", rightDefaultValue);
       } else {
         left = keyboardJSON.left[leftDefaultValue];
         right = keyboardJSON.right[rightDefaultValue];
@@ -332,6 +326,29 @@ const { type, keyboard } = Astro.props;
       const debounceResize = debounce(onWindowResize, 250);
       window.addEventListener("resize", debounceResize);
     }
+  }
+
+  function createKBOData(side: string, value: string) {
+    if (side === "left") {
+      const newLeft = JSON.parse(JSON.stringify(keyboardJSON.left.base));
+      const extraLeft = optionsJSON.left[value];
+      newLeft.mx = [...newLeft.mx, ...extraLeft.mx];
+      newLeft.rows = { ...newLeft.rows, ...extraLeft.rows };
+      left = newLeft;
+    }
+    if (side === "right") {
+      const newRight = JSON.parse(JSON.stringify(keyboardJSON.right.base));
+      const extraRight = optionsJSON.right[value];
+      newRight.mx = [...newRight.mx, ...extraRight.mx];
+      newRight.rows = { ...newRight.rows, ...extraRight.rows };
+      right = newRight;
+      updateRightShift();
+    }
+  }
+
+  function updateRightShift() {
+    const extraShift = optionsJSON.shift[rightShift];
+    right.mx[42] = extraShift;
   }
 
   function createSwitchMesh(side: string) {
