@@ -23,40 +23,13 @@ const { type, keyboard } = Astro.props;
   import { GainMapLoader } from "@monogrid/gainmap-js";
   import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
   import { MathUtils } from "three";
-  import { three } from "../assets/three.json";
-  import { geometry } from "../assets/geometry.json";
+  import Keyboard from "../scripts/keyboard";
 
-  let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, controls: OrbitControls;
-  let left: threeObj, right: threeObj;
+  let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
   let keyboardName: string;
-  let keyboardJSON: { [key: string]: { [key: string]: threeObj } };
-  let optionsJSON: kboOptions;
-  let rightShift: string;
   let changed = false;
-
-  // Main container for left/right group, to be rotated in scene
-  const mainGroup = new THREE.Group();
-  const rotation = Math.PI / 2;
-
-  // Parent container to be rotated for mounting
-  const leftPivotGroup = new THREE.Group();
-  const rightPivotGroup = new THREE.Group();
-
-  // Container holding keycaps, case & switches
-  const leftGroup = new THREE.Group();
-  leftGroup.name = "left";
-  const rightGroup = new THREE.Group();
-  rightGroup.name = "right";
-
-  // Container holding keycap instanced meshes
-  const keysGroupLeft = new THREE.Group();
-  leftGroup.add(keysGroupLeft);
-  let leftSwitchMesh: THREE.InstancedMesh;
-  const leftSwitch3DMap = new THREE.Object3D();
-  const keysGroupRight = new THREE.Group();
-  rightGroup.add(keysGroupRight);
-  let rightSwitchMesh: THREE.InstancedMesh;
-  const rightSwitch3DMap = new THREE.Object3D();
+  const scene = new THREE.Scene();
+  const keyboard = new Keyboard(scene);
 
   // Materials
   const envMapIntensity = 2;
@@ -90,59 +63,19 @@ const { type, keyboard } = Astro.props;
   });
   caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
+  keyboard.setMaterials(baseMat, keyMat);
+
   const onChange = () => (changed = true);
-
-  const leftSideInput = document.getElementById("left-options");
-  const rightSideInput = document.getElementById("right-options");
-  const rightShiftInput = document.getElementById("right-shift");
-
-  leftSideInput?.addEventListener("change", function (e) {
-    if (e.target instanceof HTMLInputElement) {
-      if (keyboardName === "kbo") createKBOData("left", e.target.value);
-      else left = keyboardJSON.left[e.target.value];
-      createPlates("left", e.target.value);
-      createSwitchMesh("left");
-      createKeycaps("left");
-      changed = true;
-    }
-  });
-  rightSideInput?.addEventListener("change", function (e) {
-    if (e.target instanceof HTMLInputElement) {
-      if (keyboardName === "kbo") createKBOData("right", e.target.value);
-      else right = keyboardJSON.right[e.target.value];
-      createSwitchMesh("right");
-      createKeycaps("right");
-      changed = true;
-    }
-  });
-  rightShiftInput?.addEventListener("change", function (e) {
-    if (e.target instanceof HTMLInputElement) {
-      rightShift = e.target.value;
-      updateRightShift();
-      changed = true;
-    }
-  });
 
   init();
   animate();
 
   function init() {
     canvas = document.querySelector(".canvas");
-    scene = new THREE.Scene();
-
-    const centerVector = new THREE.Vector3(),
-      centerBox = new THREE.Box3();
-
-    const leftDefault = document.querySelector("#left-options input:checked") as HTMLInputElement,
-      leftDefaultType = leftDefault?.dataset.type,
-      leftDefaultValue = leftDefault?.value,
-      rightDefault = document.querySelector("#right-options input:checked") as HTMLInputElement,
-      rightDefaultType = rightDefault?.dataset.type,
-      rightDefaultValue = rightDefault?.value,
-      rightShiftSelector = document.querySelector("#right-shift input:checked") as HTMLInputElement;
 
     if (canvas) {
       keyboardName = canvas.dataset.keyboard || "";
+      keyboard.setKeyboard(keyboardName);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -192,15 +125,15 @@ const { type, keyboard } = Astro.props;
       // Loaders
 
       const manager = new THREE.LoadingManager(() => {
+        scene.add(keyboard.main);
         const loadScreen = document.getElementById("three-loading");
         loadScreen?.classList.add("opacity-0");
         loadScreen?.addEventListener("transitionend", (e) => {
           if (e.target instanceof HTMLElement) e.target.remove();
         });
-        camera.lookAt(centerVector);
         camera.updateProjectionMatrix();
-        controls.target.set(centerVector.x, centerVector.y, centerVector.z);
         pmremGenerator.dispose();
+        changed = true;
       });
       const dracoLoader = new DRACOLoader(manager);
       dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
@@ -272,215 +205,22 @@ const { type, keyboard } = Astro.props;
       scene.add(shadowPlane);
 
       // Create Plate Mesh
-
-      createPlates("left", leftDefaultType === "macro" ? leftDefaultValue : "base");
-      createPlates("right", rightDefaultType === "macro" ? rightDefaultType : "base");
-
-      // Load Models
-
-      keyboardJSON = (three as keyboardObj)[keyboardName];
-
-      if (keyboardName === "kbo") {
-        optionsJSON = three.options as kboOptions;
-        rightShift = rightShiftSelector.value;
-        createKBOData("left", leftDefaultValue);
-        createKBOData("right", rightDefaultValue);
-      } else {
-        left = keyboardJSON.left[leftDefaultValue];
-        right = keyboardJSON.right[rightDefaultValue];
-      }
-      const keyboardModelSrc = `/models/${keyboardName}.glb`;
-      const caseModelSrc = `/models/t${canvas.dataset.type}-${keyboardName.slice(0, 1)}.glb`;
-
-      loader.load(caseModelSrc, function (gltf) {
-        const files: THREE.Group[] = [];
-        gltf.scene.traverse((child) => {
-          if (child.name === "Scene") {
-            child.rotation.y = rotation;
-            centerBox.setFromObject(child);
-            centerBox.getCenter(centerVector);
-          }
-          if (child instanceof THREE.Mesh && child.isMesh) {
-            child.castShadow = true;
-            if (child.name.includes("_1")) child.material = caseMat;
-            else child.material = faceMat;
-          }
-          if (child instanceof THREE.Group && child.name === "left") files.push(child);
-          if (child instanceof THREE.Group && child.name === "right") files.push(child);
-        });
-
-        for (var i = 0, n = files.length; i < n; i++) {
-          if (files[i].name === "left") leftGroup.add(files[i]);
-          if (files[i].name === "right") rightGroup.add(files[i]);
-        }
-      });
-      loader.load(keyboardModelSrc, function (gltf) {
-        gltf.scene.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.isMesh) {
-            child.material = keyMat;
-            if (child.name === "plate" || child.name === "switch") child.material = baseMat;
-            if (child.name === "pcb") child.material = pcbMat;
-            if (child.name === "usb") child.material = usbMat;
-          }
-        });
-        gltf.scene.rotation.y = rotation;
-        // scene.add(gltf.scene);
-      });
+      keyboard.createPlates("left");
+      keyboard.createPlates("right");
 
       // Keycap & Switch Loader
-
       loader.load("models/switch.glb", function (gltf) {
         gltf.scene.visible = false;
         scene.add(gltf.scene);
 
-        createSwitchMesh("left");
-        createSwitchMesh("right");
-        createKeycaps("left");
-        createKeycaps("right");
-
-        setPivotPoint(leftGroup, leftPivotGroup, 1);
-        setPivotPoint(rightGroup, rightPivotGroup, -1);
-
-        leftPivotGroup.add(leftGroup);
-        rightPivotGroup.add(rightGroup);
-
-        // leftPivotGroup.rotation.z = MathUtils.degToRad(0);
-        // rightPivotGroup.rotation.z = - MathUtils.degToRad(0);
-
-        mainGroup.add(leftPivotGroup, rightPivotGroup);
-        mainGroup.rotation.y = rotation;
-        scene.add(mainGroup);
+        keyboard.createKeys("left");
+        keyboard.createKeys("right");
       });
 
       // Resize Handler
-
       const debounceResize = debounce(onWindowResize, 250);
       window.addEventListener("resize", debounceResize);
     }
-  }
-
-  function createKBOData(side: string, value: string) {
-    if (side === "left") {
-      const newLeft = JSON.parse(JSON.stringify(keyboardJSON.left.base));
-      const extraLeft = optionsJSON.left[value];
-      newLeft.mx = [...newLeft.mx, ...extraLeft.mx];
-      newLeft.rows = { ...newLeft.rows, ...extraLeft.rows };
-      left = newLeft;
-    }
-    if (side === "right") {
-      const newRight = JSON.parse(JSON.stringify(keyboardJSON.right.base));
-      const extraRight = optionsJSON.right[value];
-      newRight.mx = [...newRight.mx, ...extraRight.mx];
-      newRight.rows = { ...newRight.rows, ...extraRight.rows };
-      right = newRight;
-      updateRightShift();
-    }
-  }
-
-  function updateRightShift() {
-    const extraShift = optionsJSON.shift[rightShift];
-    right.mx[42] = extraShift;
-  }
-
-  function createSwitchMesh(side: string) {
-    const _switchMesh = scene.getObjectByName("switch");
-    const group = side === "left" ? leftGroup : rightGroup;
-    const name = `${side}-switches`;
-    const files: THREE.Object3D[] = [];
-
-    group.traverse((child) => {
-      if (child.name === name) {
-        files.push(child);
-        if (child instanceof THREE.InstancedMesh) child.geometry.dispose();
-      }
-    });
-    if (files.length) {
-      for (var i = 0, n = files.length; i < n; i++) {
-        group.remove(files[i]);
-      }
-    }
-    if (_switchMesh instanceof THREE.Mesh) {
-      if (side === "left") {
-        leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, left.mx.length);
-        leftSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        leftSwitchMesh.name = name;
-        leftGroup.add(leftSwitchMesh);
-      }
-      if (side === "right") {
-        rightSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, right.mx.length);
-        rightSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        rightSwitchMesh.name = name;
-        rightGroup.add(rightSwitchMesh);
-      }
-    }
-  }
-
-  function createKeycaps(side: string) {
-    const rowData = side === "left" ? left.rows : right.rows;
-    const keysGroup = side === "left" ? keysGroupLeft : keysGroupRight;
-
-    if (keysGroup.children.length) {
-      keysGroup.children.forEach((mesh) => {
-        if (mesh instanceof THREE.InstancedMesh) mesh.geometry.dispose();
-      });
-      keysGroup.clear();
-    }
-
-    Object.keys(rowData).forEach((row) => {
-      const _keycapMesh = scene.getObjectByName(row);
-      if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-        const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, rowData[row].length);
-        keycapMesh.name = row;
-        keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        keysGroup.add(keycapMesh);
-      }
-    });
-  }
-
-  function createPlates(side: string, type: string) {
-    const data = (geometry as geometryObj)[keyboardName];
-    if (data) {
-      const { left, right } = data;
-      const files: THREE.Object3D[] = [];
-      const group = side === "left" ? leftGroup : rightGroup;
-      const coordinates: number[][] = side === "left" ? left[type] : right[type];
-
-      if (group.children.length) {
-        group.children.forEach((mesh) => {
-          if (mesh instanceof THREE.Mesh && mesh.name === "plate") {
-            files.push(mesh);
-            mesh.geometry.dispose();
-          }
-        });
-        if (files.length) {
-          for (var i = 0, n = files.length; i < n; i++) group.remove(files[i]);
-        }
-      }
-
-      const coordinatePts = coordinates.map((pt) => new THREE.Vector2(pt[0], pt[1]));
-      const shape = new THREE.Shape(coordinatePts);
-      const plateGeometry = new THREE.ExtrudeGeometry(shape, { depth: 0.016, bevelEnabled: false });
-
-      const mesh = new THREE.Mesh(plateGeometry, baseMat);
-      mesh.scale.set(1, 1, -1);
-      mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
-      mesh.position.y = 0.1762;
-      mesh.name = "plate";
-
-      group.add(mesh);
-    }
-  }
-
-  function setPivotPoint(groupObj: THREE.Group, pivotGroup: THREE.Group, direction: number) {
-    const bbox = new THREE.Box3().setFromObject(groupObj);
-    bbox.getCenter(groupObj.position);
-    groupObj.position.multiplyScalar(-1);
-
-    const xShift = (Math.abs(bbox.max.x) + Math.abs(bbox.min.x)) / 2;
-    const yShift = (Math.abs(bbox.max.y) + Math.abs(bbox.min.y)) / 2;
-
-    groupObj.position.set(groupObj.position.x + direction * xShift, -groupObj.position.y - yShift, -groupObj.position.z);
-    pivotGroup.position.set(-groupObj.position.x, -groupObj.position.y, groupObj.position.z);
   }
 
   function setCameraFOV() {
@@ -509,45 +249,14 @@ const { type, keyboard } = Astro.props;
 
   function animate() {
     requestAnimationFrame(animate);
-        if (controls.update() || changed) {
+    if (controls.update() || changed) {
       render();
       changed = false;
     }
   }
 
   function render() {
-    if (leftSwitchMesh && rightSwitchMesh) {
-      let i = 0;
-      var maxLength = Math.max(left.mx.length, right.mx.length);
-
-      for (let x = 0; x < maxLength; x++) {
-        if (x < left.mx.length) {
-          leftSwitch3DMap.position.set(left.mx[i].x, left.mx[i].y, left.mx[i].z);
-          leftSwitch3DMap.updateMatrix();
-
-          keysGroupLeft.children.forEach((mesh) => {
-            if (mesh instanceof THREE.InstancedMesh && left.rows[mesh.name].matrix[i]) {
-              mesh.setMatrixAt(left.rows[mesh.name].matrix[i] - 1, leftSwitch3DMap.matrix);
-            }
-          });
-          leftSwitchMesh.setMatrixAt(i, leftSwitch3DMap.matrix);
-        }
-        if (x < right.mx.length) {
-          rightSwitch3DMap.position.set(right.mx[i].x, right.mx[i].y, right.mx[i].z);
-          rightSwitch3DMap.updateMatrix();
-
-          keysGroupRight.children.forEach((mesh) => {
-            if (mesh instanceof THREE.InstancedMesh && right.rows[mesh.name].matrix[i]) {
-              mesh.setMatrixAt(right.rows[mesh.name].matrix[i] - 1, rightSwitch3DMap.matrix);
-            }
-          });
-          rightSwitchMesh.setMatrixAt(i, rightSwitch3DMap.matrix);
-        }
-        i++;
-      }
-      leftSwitchMesh.instanceMatrix.needsUpdate = true;
-      rightSwitchMesh.instanceMatrix.needsUpdate = true;
-    }
+    keyboard.renderKeys();
     controls.update();
     renderer.render(scene, camera);
   }
