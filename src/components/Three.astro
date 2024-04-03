@@ -67,6 +67,36 @@ const { type, keyboard } = Astro.props;
 
   const onChange = () => (changed = true);
 
+  const leftSideInput = document.getElementById("left-options");
+  const rightSideInput = document.getElementById("right-options");
+  const rightShiftInput = document.getElementById("right-shift");
+
+  leftSideInput?.addEventListener("change", function (e) {
+    if (e.target instanceof HTMLInputElement) {
+      keyboard.leftKeyboard = e.target.value;
+      if (e.target.dataset.type === "macro") {
+        keyboard.createPlates("left");
+      }
+      changed = true;
+    }
+  });
+  rightSideInput?.addEventListener("change", function (e) {
+    if (e.target instanceof HTMLInputElement) {
+      console.log(e.target.value);
+      keyboard.rightKeyboard = e.target.value;
+      if (e.target.dataset.type === "macro") {
+        keyboard.createPlates("right");
+      }
+      changed = true;
+    }
+  });
+  rightShiftInput?.addEventListener("change", function (e) {
+    if (e.target instanceof HTMLInputElement) {
+      keyboard.rightShift = e.target.value;
+      changed = true;
+    }
+  });
+
   init();
   animate();
 

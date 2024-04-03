@@ -18,18 +18,23 @@ export default class Keyboard {
   rightShiftData?: { [index: string]: mxObj };
   rightShiftDefaultValue?: string;
 
+  // Main container for left/right group, to be rotated in scene
   mainGroup = new THREE.Group();
 
+  // Container holding keycaps, case & switches
   leftGroup = new THREE.Group();
+  rightGroup = new THREE.Group();
+
+  // Container holding keycap instanced meshes
   keysGroupLeft = new THREE.Group();
   leftSwitchMesh?: THREE.InstancedMesh;
   leftSwitch3DMap = new THREE.Object3D();
-  leftPivotGroup = new THREE.Group();
-
-  rightGroup = new THREE.Group();
   keysGroupRight = new THREE.Group();
   rightSwitchMesh?: THREE.InstancedMesh;
   rightSwitch3DMap = new THREE.Object3D();
+
+  // Parent container to be rotated for mounting
+  leftPivotGroup = new THREE.Group();
   rightPivotGroup = new THREE.Group();
 
   constructor(scene: THREE.Scene) {
@@ -58,6 +63,18 @@ export default class Keyboard {
 
   get main() {
     return this.mainGroup;
+  }
+
+  set rightShift(value: string) {
+    this.rightShiftDefaultValue = value;
+  }
+  set leftKeyboard(value: string) {
+    this.leftDefaultValue = value;
+    this.createKeys("left");
+  }
+  set rightKeyboard(value: string) {
+    this.rightDefaultValue = value;
+    this.createKeys("right");
   }
 
   setMaterials(baseMaterial: THREE.Material, keyMaterial: THREE.Material) {
@@ -129,6 +146,7 @@ export default class Keyboard {
     if (side === "right") switchData = this.right[this.rightDefaultValue];
 
     if (switchData) {
+      const name = "switches";
       // Set the group to add the switches to
       const currentGroup = side === "left" ? this.leftGroup : this.rightGroup;
       // Set the group to add the keycaps to
@@ -164,7 +182,6 @@ export default class Keyboard {
         }
       });
 
-      const name = "switches";
       if (_switchMesh instanceof THREE.Mesh) {
         if (side === "left") {
           this.leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), this.materials.baseMat, switchData.mx.length);
@@ -186,12 +203,13 @@ export default class Keyboard {
     const data = (geometry as geometryObj)[this.keyboardName];
 
     let defaultType = side === "left" ? this.leftDefaultType : this.rightDefaultType;
+    let defaultTypeValue = side === "left" ? this.leftDefaultValue : this.rightDefaultValue;
 
-    if (defaultType !== "macro") defaultType = "base";
+    if (defaultType !== "macro") defaultTypeValue = "base";
 
     let plateData;
-    if (side === "left") plateData = data && data.left[defaultType];
-    if (side === "right") plateData = data && data.right[defaultType];
+    if (side === "left") plateData = data && data.left[defaultTypeValue];
+    if (side === "right") plateData = data && data.right[defaultTypeValue];
 
     if (plateData) {
       const name = "plate";
