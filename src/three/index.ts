@@ -8,6 +8,7 @@ import { GainMapLoader } from "@monogrid/gainmap-js";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { MathUtils } from "three";
 import Keyboard from "./keyboard";
+import { keyLight, fillLight, shadowPlane } from "./lights";
 
 let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
 let keyboardName: string;
@@ -199,27 +200,8 @@ function init() {
       gainMap.dispose();
     });
 
-    // Lights
-
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1);
-    keyLight.position.set(-5, 4, 2);
     scene.add(keyLight);
-
-    const keyLight2 = new THREE.DirectionalLight(0xffffff, 1);
-    keyLight2.position.set(-2, 4, -2);
-    keyLight2.castShadow = true;
-    keyLight2.shadow.mapSize.width = 1024;
-    keyLight2.shadow.mapSize.height = 1024;
-    scene.add(keyLight2);
-
-    // Shadow Plane
-
-    const planeGeometry = new THREE.PlaneGeometry(2, 5);
-    planeGeometry.rotateX(-Math.PI / 2);
-    const shadowMaterial = new THREE.ShadowMaterial();
-    shadowMaterial.opacity = 0.3;
-    const shadowPlane = new THREE.Mesh(planeGeometry, shadowMaterial);
-    shadowPlane.receiveShadow = true;
+    scene.add(fillLight);
     scene.add(shadowPlane);
 
     // Create Plate Mesh
