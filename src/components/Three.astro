@@ -23,7 +23,7 @@ const { type, keyboard } = Astro.props;
   import { GainMapLoader } from "@monogrid/gainmap-js";
   import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
   import { MathUtils } from "three";
-  import Keyboard from "../scripts/keyboard";
+  import Keyboard from "../three/keyboard";
 
   let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
   let keyboardName: string;
