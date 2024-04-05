@@ -31,6 +31,9 @@ const { type, keyboard } = Astro.props;
   const scene = new THREE.Scene();
   const keyboard = new Keyboard(scene);
 
+  const centerVector = new THREE.Vector3(),
+    centerBox = new THREE.Box3();
+
   // Materials
   const envMapIntensity = 2;
   const caseMat = new THREE.MeshStandardMaterial({
@@ -76,16 +79,17 @@ const { type, keyboard } = Astro.props;
       keyboard.leftKeyboard = e.target.value;
       if (e.target.dataset.type === "macro") {
         keyboard.createPlates("left");
+        setCameraCenter();
       }
       changed = true;
     }
   });
   rightSideInput?.addEventListener("change", function (e) {
     if (e.target instanceof HTMLInputElement) {
-      console.log(e.target.value);
       keyboard.rightKeyboard = e.target.value;
       if (e.target.dataset.type === "macro") {
         keyboard.createPlates("right");
+        setCameraCenter();
       }
       changed = true;
     }
@@ -161,7 +165,7 @@ const { type, keyboard } = Astro.props;
         loadScreen?.addEventListener("transitionend", (e) => {
           if (e.target instanceof HTMLElement) e.target.remove();
         });
-        camera.updateProjectionMatrix();
+        setCameraCenter();
         pmremGenerator.dispose();
         changed = true;
       });
@@ -251,6 +255,14 @@ const { type, keyboard } = Astro.props;
       const debounceResize = debounce(onWindowResize, 250);
       window.addEventListener("resize", debounceResize);
     }
+  }
+
+  function setCameraCenter() {
+    centerBox.setFromObject(keyboard.mainGroup);
+    centerBox.getCenter(centerVector);
+    camera.lookAt(centerVector);
+    camera.updateProjectionMatrix();
+    controls.target.set(centerVector.x, centerVector.y, centerVector.z);
   }
 
   function setCameraFOV() {
