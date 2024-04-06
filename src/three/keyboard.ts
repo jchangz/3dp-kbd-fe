@@ -207,6 +207,12 @@ export default class Keyboard {
 
     if (defaultType !== "macro") defaultTypeValue = "base";
 
+    if (this.keyboardName === "quefrency" && side === "right") {
+      // Quefrency right plate: 65 = macro, 60 = no-macro
+      if (this.rightDefaultValue === "60") defaultTypeValue = "no-macro";
+      else defaultTypeValue = "macro";
+    }
+
     let plateData;
     if (side === "left") plateData = data && data.left[defaultTypeValue];
     if (side === "right") plateData = data && data.right[defaultTypeValue];
