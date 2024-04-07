@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { debounce } from "lodash";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
@@ -218,6 +218,13 @@ function init() {
     keyboard.createPlates("left");
     keyboard.createPlates("right");
 
+    loader.load(keyboard.leftFileName, (gltf) => {
+      caseLoader(gltf, "left");
+    });
+    loader.load(keyboard.rightFileName, (gltf) => {
+      caseLoader(gltf, "right");
+    });
+
     // Keycap & Switch Loader
     loader.load("models/switch.glb", function (gltf) {
       gltf.scene.visible = false;
@@ -230,6 +237,29 @@ function init() {
     // Resize Handler
     const debounceResize = debounce(onWindowResize, 250);
     window.addEventListener("resize", debounceResize);
+  }
+}
+
+function caseLoader(gltf: GLTF, side: string) {
+  const filesToAdd: THREE.Group[] = [];
+  const bottomCase = keyboard.bottomCaseDefaultValue;
+
+  gltf.scene.traverse((child) => {
+    if (child instanceof THREE.Mesh && child.isMesh) {
+      child.castShadow = true;
+      if (child.name.includes("_2")) child.material = faceMat;
+      else child.material = caseMat;
+    }
+    if (child instanceof THREE.Group && child.name !== "Scene") {
+      child.visible = false;
+      if (child.name === "top" || child.name === bottomCase) child.visible = true;
+      filesToAdd.push(child);
+    }
+  });
+
+  for (let i = 0; i < filesToAdd.length; i++) {
+    if (side === "left") keyboard.setLeftCase(filesToAdd[i]);
+    if (side === "right") keyboard.setRightCase(filesToAdd[i]);
   }
 }
 

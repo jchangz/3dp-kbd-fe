@@ -30,6 +30,10 @@ export default class Keyboard {
   leftGroup = new THREE.Group();
   rightGroup = new THREE.Group();
 
+  // Container holding case meshes
+  leftCaseGroup = new THREE.Group();
+  rightCaseGroup = new THREE.Group();
+
   // Container holding keycap instanced meshes
   keysGroupLeft = new THREE.Group();
   leftSwitchMesh?: THREE.InstancedMesh;
@@ -43,8 +47,8 @@ export default class Keyboard {
   rightPivotGroup = new THREE.Group();
 
   constructor(scene: THREE.Scene) {
-    this.leftGroup.add(this.keysGroupLeft);
-    this.rightGroup.add(this.keysGroupRight);
+    this.leftGroup.add(this.leftCaseGroup, this.keysGroupLeft);
+    this.rightGroup.add(this.rightCaseGroup, this.keysGroupRight);
 
     this.leftPivotGroup.add(this.leftGroup);
     this.rightPivotGroup.add(this.rightGroup);
@@ -86,6 +90,19 @@ export default class Keyboard {
   set rightKeyboard(value: string) {
     this.rightDefaultValue = value;
     this.createKeys("right");
+  }
+
+  clearCaseGroup(side: string) {
+    if (side === "left") this.leftCaseGroup.clear();
+    if (side === "right") this.rightCaseGroup.clear();
+  }
+
+  setLeftCase(meshes: THREE.Group) {
+    this.leftCaseGroup.add(meshes);
+  }
+
+  setRightCase(meshes: THREE.Group) {
+    this.rightCaseGroup.add(meshes);
   }
 
   setMaterials(baseMaterial: THREE.Material, keyMaterial: THREE.Material) {
