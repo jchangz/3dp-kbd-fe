@@ -8,6 +8,8 @@ export default class Keyboard {
   keyboardName = ""; // quefrency, sinc, kbo
   materials: { [key: string]: THREE.Material } = {};
 
+  bottomCaseDefaultValue = "";
+
   left: { [key: string]: threeObj } = {};
   leftDefaultType = "";
   leftDefaultValue = "";
@@ -58,6 +60,9 @@ export default class Keyboard {
     const rightShiftDefault = document.querySelector("#right-shift input:checked") as HTMLInputElement;
     this.rightShiftDefaultValue = rightShiftDefault?.value;
 
+    const bottomCaseDefault = document.querySelector("#bottom-case input:checked") as HTMLInputElement;
+    this.bottomCaseDefaultValue = bottomCaseDefault?.value;
+
     this.scene = scene;
   }
 
@@ -65,6 +70,9 @@ export default class Keyboard {
     return this.mainGroup;
   }
 
+  set bottomCase(value: string) {
+    this.bottomCaseDefaultValue = value;
+  }
   set rightShift(value: string) {
     this.rightShiftDefaultValue = value;
   }

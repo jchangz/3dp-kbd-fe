@@ -12,6 +12,7 @@ interface Props {
   leftOptions: configOptionsObj[];
   rightOptions: configOptionsObj[];
   shiftOptions: configOptionsObj[];
+  bottomOptions: configOptionsObj[];
 }
 
 export async function getStaticPaths() {
@@ -26,13 +27,29 @@ export async function getStaticPaths() {
   });
   return pages.map(({ slug, title, kbdType, caseType }) => {
     const { left: leftOptions, right: rightOptions, shift: shiftOptions } = (config as configObj)[kbdType];
+    let bottomOptions;
+    if (caseType === "1" || caseType === "3" || caseType === "g") {
+      bottomOptions = [
+        {
+          title: "Standard",
+          "data-type": "bottom",
+          value: "standard",
+        },
+        {
+          title: "Vented",
+          "data-type": "bottom",
+          value: "vented",
+          default: true,
+        },
+      ];
+    }
     return {
       params: { slug },
-      props: { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions },
+      props: { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions, bottomOptions },
     };
   });
 }
-const { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions } = Astro.props;
+const { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions, bottomOptions } = Astro.props;
 ---
 
 <Layout title={title}>
@@ -74,6 +91,23 @@ const { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions } = As
               {shiftOptions.map((opt) => (
                 <div>
                   <input type="radio" id={opt.value} data-type={opt["data-type"]} name="right" value={opt.value} checked={opt.default} />
+                  <label for={opt.value}>{opt.title}</label>
+                </div>
+              ))}
+            </fieldset>
+          </form>
+        )
+      }
+    </>
+    <>
+      {
+        bottomOptions && (
+          <form id="bottom-case">
+            <fieldset>
+              <legend>Bottom:</legend>
+              {bottomOptions.map((opt) => (
+                <div>
+                  <input type="radio" id={opt.value} data-type={opt["data-type"]} name="bottom" value={opt.value} checked={opt.default} />
                   <label for={opt.value}>{opt.title}</label>
                 </div>
               ))}
