@@ -12,6 +12,7 @@ import { keyLight, fillLight, shadowPlane } from "./lights";
 
 let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
 let keyboardName: string;
+let keyboardType: string;
 let changed = false;
 const scene = new THREE.Scene();
 const keyboard = new Keyboard(scene);
@@ -101,7 +102,9 @@ function init() {
 
   if (canvas) {
     keyboardName = canvas.dataset.keyboard || "";
-    keyboard.setKeyboard(keyboardName);
+    keyboardType = canvas.dataset.type || "";
+
+    keyboard.setKeyboard(keyboardName, keyboardType);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
