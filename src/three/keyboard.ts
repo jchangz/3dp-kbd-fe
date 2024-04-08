@@ -105,6 +105,17 @@ export default class Keyboard {
     this.rightCaseGroup.add(meshes);
   }
 
+  setBottomCase(type: string) {
+    this.bottomCaseDefaultValue = type;
+    const groupToShow = this.mainGroup.getObjectByName(type);
+    const toHide = type === "standard" ? "vented" : "standard";
+    const groupToHide = this.mainGroup.getObjectByName(toHide);
+    if (groupToHide && groupToShow) {
+      groupToHide.visible = false;
+      groupToShow.visible = true;
+    }
+  }
+
   setMaterials(baseMaterial: THREE.Material, keyMaterial: THREE.Material) {
     this.materials.baseMat = baseMaterial;
     this.materials.keyMat = keyMaterial;

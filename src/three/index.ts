@@ -61,12 +61,12 @@ const rightSideInput = document.getElementById("right-options");
 const rightShiftInput = document.getElementById("right-shift");
 const bottomCaseInput = document.getElementById("bottom-case");
 
-bottomCaseInput?.addEventListener("change", function(e) {
+bottomCaseInput?.addEventListener("change", function (e) {
   if (e.target instanceof HTMLInputElement) {
-    keyboard.bottomCase = e.target.value;
+    keyboard.setBottomCase(e.target.value);
     changed = true;
   }
-})
+});
 leftSideInput?.addEventListener("change", function (e) {
   if (e.target instanceof HTMLInputElement) {
     keyboard.leftKeyboard = e.target.value;
