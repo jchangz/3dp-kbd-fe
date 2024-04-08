@@ -107,12 +107,14 @@ export default class Keyboard {
 
   setBottomCase(type: string) {
     this.bottomCaseDefaultValue = type;
-    const groupToShow = this.mainGroup.getObjectByName(type);
     const toHide = type === "standard" ? "vented" : "standard";
-    const groupToHide = this.mainGroup.getObjectByName(toHide);
-    if (groupToHide && groupToShow) {
-      groupToHide.visible = false;
-      groupToShow.visible = true;
+    const groupsToShow = this.mainGroup.getObjectsByProperty("name", type);
+    const groupsToHide = this.mainGroup.getObjectsByProperty("name", toHide);
+    if (groupsToHide.length && groupsToShow.length) {
+      for (let i = 0; i < groupsToHide.length; i++) {
+        groupsToHide[i].visible = false;
+        groupsToShow[i].visible = true;
+      }
     }
   }
 
