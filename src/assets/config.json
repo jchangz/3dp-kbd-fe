@@ -17,13 +17,13 @@
       "right": [
         {
           "title": "65+Blocker",
-          "data-type": "blocker",
+          "data-type": "macro",
           "value": "65-b",
           "default": true
         },
         {
           "title": "65",
-          "data-type": "blocker",
+          "data-type": "macro",
           "value": "65"
         },
         {
