@@ -17,6 +17,16 @@ let changed = false;
 const scene = new THREE.Scene();
 const keyboard = new Keyboard(scene);
 
+const manager2 = new THREE.LoadingManager();
+manager2.onProgress = (url, loaded, total) => {
+  let progress = (loaded / total) * 100;
+};
+manager2.onLoad = () => {
+  setCameraCenter();
+  changed = true;
+};
+const reloader = new GLTFLoader(manager2).setMeshoptDecoder(MeshoptDecoder);
+
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
