@@ -231,7 +231,7 @@ function init() {
 }
 
 function setCameraCenter() {
-  centerBox.setFromObject(keyboard.mainGroup);
+  centerBox.setFromObject(keyboard.main);
   centerBox.getCenter(centerVector);
   camera.lookAt(centerVector);
   camera.updateProjectionMatrix();
