@@ -218,10 +218,10 @@ function init() {
     keyboard.createPlates("left");
     keyboard.createPlates("right");
 
-    loader.load(keyboard.leftFileName, (gltf) => {
+    loader.load(keyboard.getFileName("left"), (gltf) => {
       caseLoader(gltf, "left");
     });
-    loader.load(keyboard.rightFileName, (gltf) => {
+    loader.load(keyboard.getFileName("right"), (gltf) => {
       caseLoader(gltf, "right");
     });
 

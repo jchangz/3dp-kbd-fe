@@ -7,8 +7,6 @@ export default class Keyboard {
   scene;
   keyboardName = ""; // quefrency, sinc, kbo
   fileBaseName = "";
-  leftFileName = "";
-  rightFileName = "";
   materials: { [key: string]: THREE.Material } = {};
 
   bottomCaseDefaultValue = "";
@@ -123,20 +121,23 @@ export default class Keyboard {
     this.materials.keyMat = keyMaterial;
   }
 
-  setFileNames() {
-    this.leftFileName = `${this.fileBaseName}-left`;
-    this.rightFileName = `${this.fileBaseName}-right`;
+  getFileName(side: string, value?: string) {
+    let string = `${this.fileBaseName}-${side}`;
+    const leftSideValue = value || this.leftDefaultValue;
+    const rightSideValue = value || this.rightDefaultValue;
 
-    if (this.leftDefaultValue === "macro") this.leftFileName += "-macro";
-
-    // Quefrency only
-    if (this.rightDefaultType === "macro") {
-      if (this.rightDefaultValue === "60") this.rightFileName += "-60";
-      else this.rightFileName += "-65";
+    if (side === "left") {
+      if (leftSideValue === "macro") string += "-macro";
     }
+    if (side === "right") {
+      if (this.rightDefaultType === "macro") {
+        if (rightSideValue === "60") string += "-60";
+        else string += "-65";
+      }
+    }
+    string += ".glb";
 
-    this.leftFileName += ".glb";
-    this.rightFileName += ".glb";
+    return string;
   }
 
   setKeyboard(keyboardName: string, keyboardType: string) {
@@ -258,8 +259,6 @@ export default class Keyboard {
   }
 
   createPlates(side: string) {
-    this.setFileNames();
-
     const data = (geometry as geometryObj)[this.keyboardName];
 
     let defaultType = side === "left" ? this.leftDefaultType : this.rightDefaultType;
