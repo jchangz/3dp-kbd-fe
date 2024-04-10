@@ -11,11 +11,39 @@ import Keyboard from "./keyboard";
 import { keyLight, fillLight, shadowPlane } from "./lights";
 
 let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
-let keyboardName: string;
-let keyboardType: string;
-let changed = false;
 const scene = new THREE.Scene();
 const keyboard = new Keyboard(scene);
+let changed = false;
+
+// GUI
+
+const gui = new GUI({ autoPlace: false }),
+  params = {
+    case: keyboard.caseMat.color.getHex(),
+    keycap: keyboard.keyMat.color.getHex(),
+  };
+gui.domElement.id = "gui";
+gui.addColor(params, "case").onChange(function (val) {
+  keyboard.caseMat.color.setHex(val);
+  changed = true;
+});
+gui.addColor(params, "keycap").onChange(function (val) {
+  keyboard.keyMat.color.setHex(val);
+  changed = true;
+});
+gui.open();
+
+// Coordinates for Centering Camera
+
+const centerVector = new THREE.Vector3(),
+  centerBox = new THREE.Box3();
+
+// Loading Managers
+
+const manager = new THREE.LoadingManager();
+const dracoLoader = new DRACOLoader(manager);
+dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+const loader = new GLTFLoader(manager).setDRACOLoader(dracoLoader).setMeshoptDecoder(MeshoptDecoder);
 
 const manager2 = new THREE.LoadingManager();
 manager2.onProgress = (url, loaded, total) => {
@@ -24,10 +52,7 @@ manager2.onProgress = (url, loaded, total) => {
 manager2.onLoad = () => {};
 const reloader = new GLTFLoader(manager2).setMeshoptDecoder(MeshoptDecoder);
 
-const centerVector = new THREE.Vector3(),
-  centerBox = new THREE.Box3();
-
-const onChange = () => (changed = true);
+// Change Keyboard Options
 
 const onKeyboardChange = (e: Event, side: string) => {
   const { target } = e;
@@ -55,22 +80,26 @@ const onKeyboardChange = (e: Event, side: string) => {
   }
 };
 
-const leftSideInput = document.getElementById("left-options");
-const rightSideInput = document.getElementById("right-options");
-const rightShiftInput = document.getElementById("right-shift");
-const bottomCaseInput = document.getElementById("bottom-case");
+// Event Listeners
 
-bottomCaseInput?.addEventListener("change", function (e) {
-  if (e.target instanceof HTMLInputElement) {
-    keyboard.setBottomCase(e.target.value);
-    changed = true;
-  }
-});
+const leftSideInput = document.getElementById("left-options");
 leftSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "left"));
+
+const rightSideInput = document.getElementById("right-options");
 rightSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "right"));
+
+const rightShiftInput = document.getElementById("right-shift");
 rightShiftInput?.addEventListener("change", function (e) {
   if (e.target instanceof HTMLInputElement) {
     keyboard.rightShift = e.target.value;
+    changed = true;
+  }
+});
+
+const bottomCaseInput = document.getElementById("bottom-case");
+bottomCaseInput?.addEventListener("change", function (e) {
+  if (e.target instanceof HTMLInputElement) {
+    keyboard.setBottomCase(e.target.value);
     changed = true;
   }
 });
@@ -82,10 +111,13 @@ function init() {
   canvas = document.querySelector(".canvas");
 
   if (canvas) {
-    keyboardName = canvas.dataset.keyboard || "";
-    keyboardType = canvas.dataset.type || "";
+    // Create Keyboard
 
+    const keyboardName = canvas.dataset.keyboard || "";
+    const keyboardType = canvas.dataset.type || "";
     keyboard.setKeyboard(keyboardName, keyboardType);
+
+    // Renderer
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -98,58 +130,39 @@ function init() {
     renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
     canvas.appendChild(renderer.domElement);
 
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+
+    // Camera
+
     camera = new THREE.PerspectiveCamera(1, canvas.offsetWidth / canvas.offsetHeight, 1, 1000);
     camera.position.set(110, 90, -70);
     setCameraFOV();
 
+    // Controls
+
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     // controls.autoRotate = true;
-    controls.minDistance = 100;
+    controls.minDistance = 50;
     controls.maxDistance = 200;
-    controls.addEventListener("change", onChange);
-
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    pmremGenerator.compileEquirectangularShader();
-
-    // GUI
-
-    const params = {
-      case: keyboard.caseMat.color.getHex(),
-      keycap: keyboard.keyMat.color.getHex(),
-    };
-
-    const gui = new GUI({ autoPlace: false });
-    gui.domElement.id = "gui";
+    controls.addEventListener("change", () => (changed = true));
     canvas.appendChild(gui.domElement);
-    gui.addColor(params, "case").onChange(function (val) {
-      keyboard.caseMat.color.setHex(val);
-      changed = true;
-    });
-    gui.addColor(params, "keycap").onChange(function (val) {
-      keyboard.keyMat.color.setHex(val);
-      changed = true;
-    });
-    gui.open();
 
-    // Loaders
+    // On Initial Load
 
-    const manager = new THREE.LoadingManager(() => {
+    manager.onLoad = () => {
       scene.add(keyboard.main);
       const loadScreen = document.getElementById("three-loading");
       loadScreen?.classList.add("opacity-0");
       loadScreen?.addEventListener("transitionend", (e) => {
         if (e.target instanceof HTMLElement) e.target.remove();
       });
-      setCameraCenter();
       pmremGenerator.dispose();
-      changed = true;
-    });
-    const dracoLoader = new DRACOLoader(manager);
-    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
-    const loader = new GLTFLoader(manager).setDRACOLoader(dracoLoader).setMeshoptDecoder(MeshoptDecoder);
+      setCameraCenter();
+    };
 
-    // Textures
+    // Texture Loader
 
     const texloader = new THREE.TextureLoader(manager);
 
@@ -179,7 +192,7 @@ function init() {
 
     caseNormal.wrapS = caseNormal.wrapT = caseRoughness.wrapS = caseRoughness.wrapT = caseAO.wrapS = caseAO.wrapT = caseFaceNormal.wrapS = caseFaceNormal.wrapT = keyNormal.wrapS = keyNormal.wrapT = keyRoughness.wrapS = keyRoughness.wrapT = THREE.RepeatWrapping;
 
-    // Environment
+    // Environment Loader
 
     const gainMap = new GainMapLoader(renderer).load(["gainmap/studio.webp", "gainmap/studio-gainmap.webp", "gainmap/studio.json"], function (texture) {
       const gainMapBackground = texture.renderTarget.texture;
@@ -191,9 +204,13 @@ function init() {
       gainMap.dispose();
     });
 
+    // Lighting
+
     scene.add(keyLight);
     scene.add(fillLight);
     scene.add(shadowPlane);
+
+    // Load Case, Switch, Keycap Files
 
     loader.load(keyboard.getFileName("left"), (gltf) => keyboard.caseLoader(gltf, "left"));
     loader.load(keyboard.getFileName("right"), (gltf) => keyboard.caseLoader(gltf, "right"));
@@ -207,6 +224,7 @@ function init() {
     });
 
     // Resize Handler
+
     const debounceResize = debounce(onWindowResize, 250);
     window.addEventListener("resize", debounceResize);
   }
