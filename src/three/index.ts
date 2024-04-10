@@ -224,18 +224,9 @@ function init() {
     scene.add(fillLight);
     scene.add(shadowPlane);
 
-    // Create Plate Mesh
-    keyboard.createPlates("left");
-    keyboard.createPlates("right");
+    loader.load(keyboard.getFileName("left"), (gltf) => caseLoader(gltf, "left"));
+    loader.load(keyboard.getFileName("right"), (gltf) => caseLoader(gltf, "right"));
 
-    loader.load(keyboard.getFileName("left"), (gltf) => {
-      caseLoader(gltf, "left");
-    });
-    loader.load(keyboard.getFileName("right"), (gltf) => {
-      caseLoader(gltf, "right");
-    });
-
-    // Keycap & Switch Loader
     loader.load("models/switch.glb", function (gltf) {
       gltf.scene.visible = false;
       scene.add(gltf.scene);
@@ -266,6 +257,9 @@ function caseLoader(gltf: GLTF, side: string) {
       filesToAdd.push(child);
     }
   });
+
+  keyboard.createPlates(side);
+  keyboard.clearCaseGroup(side);
 
   for (let i = 0; i < filesToAdd.length; i++) {
     if (side === "left") keyboard.setLeftCase(filesToAdd[i]);
