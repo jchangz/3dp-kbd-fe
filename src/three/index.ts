@@ -27,31 +27,6 @@ const reloader = new GLTFLoader(manager2).setMeshoptDecoder(MeshoptDecoder);
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
-// Materials
-const envMapIntensity = 2;
-const keyMat = new THREE.MeshStandardMaterial({
-  color: 0x171718,
-  roughness: 0.5,
-  envMapIntensity: envMapIntensity,
-});
-const baseMat = new THREE.MeshStandardMaterial({
-  color: 0x171718,
-  roughness: 0.3,
-  envMapIntensity: envMapIntensity,
-});
-const pcbMat = new THREE.MeshStandardMaterial({
-  color: 0x046307,
-  roughness: 0.8,
-  envMapIntensity: envMapIntensity,
-});
-const usbMat = new THREE.MeshStandardMaterial({
-  metalness: 1,
-  roughness: 0.2,
-  envMapIntensity: envMapIntensity,
-});
-
-keyboard.setMaterials(baseMat, keyMat);
-
 const onChange = () => (changed = true);
 
 const onKeyboardChange = (e: Event, side: string) => {
@@ -141,7 +116,7 @@ function init() {
 
     const params = {
       case: keyboard.caseMat.color.getHex(),
-      keycap: keyMat.color.getHex(),
+      keycap: keyboard.keyMat.color.getHex(),
     };
 
     const gui = new GUI({ autoPlace: false });
@@ -152,7 +127,7 @@ function init() {
       changed = true;
     });
     gui.addColor(params, "keycap").onChange(function (val) {
-      keyMat.color.setHex(val);
+      keyboard.keyMat.color.setHex(val);
       changed = true;
     });
     gui.open();
@@ -196,11 +171,11 @@ function init() {
 
     const keyNormal = texloader.load("models/key_normal.webp");
     keyNormal.repeat.set(2, 2);
-    keyMat.normalMap = keyNormal;
+    keyboard.keyMat.normalMap = keyNormal;
 
     const keyRoughness = texloader.load("models/key_roughness.webp");
     keyRoughness.repeat.set(2, 2);
-    keyMat.roughnessMap = keyRoughness;
+    keyboard.keyMat.roughnessMap = keyRoughness;
 
     caseNormal.wrapS = caseNormal.wrapT = caseRoughness.wrapS = caseRoughness.wrapT = caseAO.wrapS = caseAO.wrapT = caseFaceNormal.wrapS = caseFaceNormal.wrapT = keyNormal.wrapS = keyNormal.wrapT = keyRoughness.wrapS = keyRoughness.wrapT = THREE.RepeatWrapping;
 
@@ -213,7 +188,6 @@ function init() {
       const gainMapPMREMRenderTarget = pmremGenerator.fromEquirectangular(gainMapBackground);
 
       keyboard.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
-      usbMat.envMap = pcbMat.envMap = keyMat.envMap = baseMat.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
       gainMap.dispose();
     });
 

@@ -48,8 +48,14 @@ export default class Keyboard {
   // Materials
   caseMat: THREE.MeshStandardMaterial;
   faceMat: THREE.MeshStandardMaterial;
+  baseMat: THREE.MeshStandardMaterial;
+  keyMat: THREE.MeshStandardMaterial;
+  pcbMat: THREE.MeshStandardMaterial;
+  usbMat: THREE.MeshStandardMaterial;
 
   constructor(scene: THREE.Scene) {
+    this.scene = scene;
+
     this.leftGroup.add(this.leftCaseGroup, this.keysGroupLeft);
     this.rightGroup.add(this.rightCaseGroup, this.keysGroupRight);
 
@@ -83,8 +89,26 @@ export default class Keyboard {
       envMapIntensity: envMapIntensity,
     });
     this.caseMat.color = this.faceMat.color = new THREE.Color(0x171718);
-
-    this.scene = scene;
+    this.baseMat = new THREE.MeshStandardMaterial({
+      color: 0x171718,
+      roughness: 0.3,
+      envMapIntensity: envMapIntensity,
+    });
+    this.keyMat = new THREE.MeshStandardMaterial({
+      color: 0x171718,
+      roughness: 0.5,
+      envMapIntensity: envMapIntensity,
+    });
+    this.pcbMat = new THREE.MeshStandardMaterial({
+      color: 0x046307,
+      roughness: 0.8,
+      envMapIntensity: envMapIntensity,
+    });
+    this.usbMat = new THREE.MeshStandardMaterial({
+      metalness: 1,
+      roughness: 0.2,
+      envMapIntensity: envMapIntensity,
+    });
   }
 
   get main() {
@@ -104,7 +128,7 @@ export default class Keyboard {
     this.rightDefaultValue = value;
   }
   set envMap(envMapTexture: THREE.Texture | null) {
-    this.caseMat.envMap = this.faceMat.envMap = envMapTexture;
+    this.caseMat.envMap = this.faceMat.envMap = this.baseMat.envMap = this.keyMat.envMap = this.pcbMat.envMap = this.usbMat.envMap = envMapTexture;
   }
 
   caseLoader(gltf: GLTF, side: string) {
@@ -145,11 +169,6 @@ export default class Keyboard {
         groupsToShow[i].visible = true;
       }
     }
-  }
-
-  setMaterials(baseMaterial: THREE.Material, keyMaterial: THREE.Material) {
-    this.materials.baseMat = baseMaterial;
-    this.materials.keyMat = keyMaterial;
   }
 
   getFileName(side: string, value?: string) {
@@ -265,7 +284,7 @@ export default class Keyboard {
       Object.keys(rowData).forEach((row) => {
         const _keycapMesh = this.scene.getObjectByName(row);
         if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-          const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), this.materials.keyMat, rowData[row].length);
+          const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), this.keyMat, rowData[row].length);
           keycapMesh.name = row;
           keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
           currentKeyGroup.add(keycapMesh);
@@ -274,13 +293,13 @@ export default class Keyboard {
 
       if (_switchMesh instanceof THREE.Mesh) {
         if (side === "left") {
-          this.leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), this.materials.baseMat, switchData.mx.length);
+          this.leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), this.baseMat, switchData.mx.length);
           this.leftSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
           this.leftSwitchMesh.name = name;
           this.leftGroup.add(this.leftSwitchMesh);
         }
         if (side === "right") {
-          this.rightSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), this.materials.baseMat, switchData.mx.length);
+          this.rightSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), this.baseMat, switchData.mx.length);
           this.rightSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
           this.rightSwitchMesh.name = name;
           this.rightGroup.add(this.rightSwitchMesh);
@@ -315,7 +334,7 @@ export default class Keyboard {
         depth: 0.016,
         bevelEnabled: false,
       });
-      const mesh = new THREE.Mesh(plateGeometry, this.materials.baseMat);
+      const mesh = new THREE.Mesh(plateGeometry, this.baseMat);
       mesh.scale.set(1, 1, -1);
       mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
       mesh.position.y = 0.1762;
