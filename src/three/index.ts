@@ -21,10 +21,7 @@ const manager2 = new THREE.LoadingManager();
 manager2.onProgress = (url, loaded, total) => {
   let progress = (loaded / total) * 100;
 };
-manager2.onLoad = () => {
-  setCameraCenter();
-  changed = true;
-};
+manager2.onLoad = () => {};
 const reloader = new GLTFLoader(manager2).setMeshoptDecoder(MeshoptDecoder);
 
 const centerVector = new THREE.Vector3(),
@@ -66,6 +63,32 @@ keyboard.setMaterials(baseMat, keyMat);
 
 const onChange = () => (changed = true);
 
+const onKeyboardChange = (e: Event, side: string) => {
+  const { target } = e;
+  if (target instanceof HTMLInputElement) {
+    const {
+      value,
+      dataset: { type },
+    } = target;
+
+    if (type === "macro") {
+      const fileName = keyboard.getFileName(side, value);
+      reloader.loadAsync(fileName).then((gltf: GLTF) => {
+        if (side === "left") keyboard.leftKeyboard = value;
+        if (side === "right") keyboard.rightKeyboard = value;
+        caseLoader(gltf, side);
+        keyboard.createKeys(side);
+        setCameraCenter();
+      });
+    } else {
+      if (side === "left") keyboard.leftKeyboard = value;
+      if (side === "right") keyboard.rightKeyboard = value;
+      keyboard.createKeys(side);
+      changed = true;
+    }
+  }
+};
+
 const leftSideInput = document.getElementById("left-options");
 const rightSideInput = document.getElementById("right-options");
 const rightShiftInput = document.getElementById("right-shift");
@@ -77,26 +100,8 @@ bottomCaseInput?.addEventListener("change", function (e) {
     changed = true;
   }
 });
-leftSideInput?.addEventListener("change", function (e) {
-  if (e.target instanceof HTMLInputElement) {
-    keyboard.leftKeyboard = e.target.value;
-    if (e.target.dataset.type === "macro") {
-      keyboard.createPlates("left");
-      setCameraCenter();
-    }
-    changed = true;
-  }
-});
-rightSideInput?.addEventListener("change", function (e) {
-  if (e.target instanceof HTMLInputElement) {
-    keyboard.rightKeyboard = e.target.value;
-    if (e.target.dataset.type === "macro") {
-      keyboard.createPlates("right");
-      setCameraCenter();
-    }
-    changed = true;
-  }
-});
+leftSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "left"));
+rightSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "right"));
 rightShiftInput?.addEventListener("change", function (e) {
   if (e.target instanceof HTMLInputElement) {
     keyboard.rightShift = e.target.value;

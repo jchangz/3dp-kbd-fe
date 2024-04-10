@@ -83,11 +83,9 @@ export default class Keyboard {
   }
   set leftKeyboard(value: string) {
     this.leftDefaultValue = value;
-    this.createKeys("left");
   }
   set rightKeyboard(value: string) {
     this.rightDefaultValue = value;
-    this.createKeys("right");
   }
 
   clearCaseGroup(side: string) {
@@ -287,7 +285,7 @@ export default class Keyboard {
       const mesh = new THREE.Mesh(plateGeometry, this.materials.baseMat);
       mesh.scale.set(1, 1, -1);
       mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
-      mesh.position.y = 0.1762;
+mesh.position.y = 0.1762;
       mesh.name = name;
 
       // Set the group to add the plate to
