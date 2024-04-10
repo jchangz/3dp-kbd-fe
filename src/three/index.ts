@@ -29,14 +29,6 @@ const centerVector = new THREE.Vector3(),
 
 // Materials
 const envMapIntensity = 2;
-const caseMat = new THREE.MeshStandardMaterial({
-  roughness: 0.8,
-  envMapIntensity: envMapIntensity,
-});
-const faceMat = new THREE.MeshStandardMaterial({
-  roughness: 0.4,
-  envMapIntensity: envMapIntensity,
-});
 const keyMat = new THREE.MeshStandardMaterial({
   color: 0x171718,
   roughness: 0.5,
@@ -57,7 +49,6 @@ const usbMat = new THREE.MeshStandardMaterial({
   roughness: 0.2,
   envMapIntensity: envMapIntensity,
 });
-caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
 keyboard.setMaterials(baseMat, keyMat);
 
@@ -76,7 +67,7 @@ const onKeyboardChange = (e: Event, side: string) => {
       reloader.loadAsync(fileName).then((gltf: GLTF) => {
         if (side === "left") keyboard.leftKeyboard = value;
         if (side === "right") keyboard.rightKeyboard = value;
-        caseLoader(gltf, side);
+        keyboard.caseLoader(gltf, side);
         keyboard.createKeys(side);
         setCameraCenter();
       });
@@ -149,7 +140,7 @@ function init() {
     // GUI
 
     const params = {
-      case: caseMat.color.getHex(),
+      case: keyboard.caseMat.color.getHex(),
       keycap: keyMat.color.getHex(),
     };
 
@@ -157,7 +148,7 @@ function init() {
     gui.domElement.id = "gui";
     canvas.appendChild(gui.domElement);
     gui.addColor(params, "case").onChange(function (val) {
-      caseMat.color.setHex(val);
+      keyboard.caseMat.color.setHex(val);
       changed = true;
     });
     gui.addColor(params, "keycap").onChange(function (val) {
@@ -189,19 +180,19 @@ function init() {
 
     const caseNormal = texloader.load("models/3dp_normal.webp");
     caseNormal.repeat.set(0, 3);
-    caseMat.normalMap = caseNormal;
+    keyboard.caseMat.normalMap = caseNormal;
 
     const caseRoughness = texloader.load("models/3dp_roughness.webp");
     caseRoughness.repeat.set(0, 3);
-    caseMat.roughnessMap = caseRoughness;
+    keyboard.caseMat.roughnessMap = caseRoughness;
 
     const caseAO = texloader.load("models/3dp_ao.webp");
     caseAO.repeat.set(0, 3);
-    caseMat.aoMap = caseAO;
+    keyboard.caseMat.aoMap = caseAO;
 
     const caseFaceNormal = texloader.load("models/3dp_face.webp");
     caseFaceNormal.repeat.set(25, 25);
-    faceMat.normalMap = caseFaceNormal;
+    keyboard.faceMat.normalMap = caseFaceNormal;
 
     const keyNormal = texloader.load("models/key_normal.webp");
     keyNormal.repeat.set(2, 2);
@@ -221,7 +212,8 @@ function init() {
       gainMapBackground.needsUpdate = true;
       const gainMapPMREMRenderTarget = pmremGenerator.fromEquirectangular(gainMapBackground);
 
-      caseMat.envMap = faceMat.envMap = usbMat.envMap = pcbMat.envMap = keyMat.envMap = baseMat.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
+      keyboard.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
+      usbMat.envMap = pcbMat.envMap = keyMat.envMap = baseMat.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
       gainMap.dispose();
     });
 
@@ -229,8 +221,8 @@ function init() {
     scene.add(fillLight);
     scene.add(shadowPlane);
 
-    loader.load(keyboard.getFileName("left"), (gltf) => caseLoader(gltf, "left"));
-    loader.load(keyboard.getFileName("right"), (gltf) => caseLoader(gltf, "right"));
+    loader.load(keyboard.getFileName("left"), (gltf) => keyboard.caseLoader(gltf, "left"));
+    loader.load(keyboard.getFileName("right"), (gltf) => keyboard.caseLoader(gltf, "right"));
 
     loader.load("models/switch.glb", function (gltf) {
       gltf.scene.visible = false;
@@ -243,32 +235,6 @@ function init() {
     // Resize Handler
     const debounceResize = debounce(onWindowResize, 250);
     window.addEventListener("resize", debounceResize);
-  }
-}
-
-function caseLoader(gltf: GLTF, side: string) {
-  const filesToAdd: THREE.Group[] = [];
-  const bottomCase = keyboard.bottomCaseDefaultValue;
-
-  gltf.scene.traverse((child) => {
-    if (child instanceof THREE.Mesh && child.isMesh) {
-      child.castShadow = true;
-      if (child.name.includes("_2")) child.material = faceMat;
-      else child.material = caseMat;
-    }
-    if (child instanceof THREE.Group && child.name !== "Scene") {
-      child.visible = false;
-      if (child.name === "top" || child.name === bottomCase) child.visible = true;
-      filesToAdd.push(child);
-    }
-  });
-
-  keyboard.createPlates(side);
-  keyboard.clearCaseGroup(side);
-
-  for (let i = 0; i < filesToAdd.length; i++) {
-    if (side === "left") keyboard.setLeftCase(filesToAdd[i]);
-    if (side === "right") keyboard.setRightCase(filesToAdd[i]);
   }
 }
 

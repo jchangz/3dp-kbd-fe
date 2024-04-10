@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { MathUtils } from "three";
 import { three } from "../assets/three.json";
 import { geometry } from "../assets/geometry.json";
+import type { GLTF } from "three/examples/jsm/Addons.js";
 
 export default class Keyboard {
   scene;
@@ -44,6 +45,10 @@ export default class Keyboard {
   leftPivotGroup = new THREE.Group();
   rightPivotGroup = new THREE.Group();
 
+  // Materials
+  caseMat: THREE.MeshStandardMaterial;
+  faceMat: THREE.MeshStandardMaterial;
+
   constructor(scene: THREE.Scene) {
     this.leftGroup.add(this.leftCaseGroup, this.keysGroupLeft);
     this.rightGroup.add(this.rightCaseGroup, this.keysGroupRight);
@@ -68,6 +73,17 @@ export default class Keyboard {
     const bottomCaseDefault = document.querySelector("#bottom-case input:checked") as HTMLInputElement;
     this.bottomCaseDefaultValue = bottomCaseDefault?.value;
 
+    const envMapIntensity = 2;
+    this.caseMat = new THREE.MeshStandardMaterial({
+      roughness: 0.8,
+      envMapIntensity: envMapIntensity,
+    });
+    this.faceMat = new THREE.MeshStandardMaterial({
+      roughness: 0.4,
+      envMapIntensity: envMapIntensity,
+    });
+    this.caseMat.color = this.faceMat.color = new THREE.Color(0x171718);
+
     this.scene = scene;
   }
 
@@ -87,18 +103,35 @@ export default class Keyboard {
   set rightKeyboard(value: string) {
     this.rightDefaultValue = value;
   }
+  set envMap(envMapTexture: THREE.Texture | null) {
+    this.caseMat.envMap = this.faceMat.envMap = envMapTexture;
+  }
 
-  clearCaseGroup(side: string) {
+  caseLoader(gltf: GLTF, side: string) {
+    const filesToAdd: THREE.Group[] = [];
+    const bottomCase = this.bottomCaseDefaultValue;
+
+    gltf.scene.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.isMesh) {
+        child.castShadow = true;
+        if (child.name.includes("_2")) child.material = this.faceMat;
+        else child.material = this.caseMat;
+      }
+      if (child instanceof THREE.Group && child.name !== "Scene") {
+        child.visible = false;
+        if (child.name === "top" || child.name === bottomCase) child.visible = true;
+        filesToAdd.push(child);
+      }
+    });
+
+    this.createPlates(side);
     if (side === "left") this.leftCaseGroup.clear();
     if (side === "right") this.rightCaseGroup.clear();
-  }
 
-  setLeftCase(meshes: THREE.Group) {
-    this.leftCaseGroup.add(meshes);
-  }
-
-  setRightCase(meshes: THREE.Group) {
-    this.rightCaseGroup.add(meshes);
+    for (let i = 0; i < filesToAdd.length; i++) {
+      if (side === "left") this.leftCaseGroup.add(filesToAdd[i]);
+      if (side === "right") this.rightCaseGroup.add(filesToAdd[i]);
+    }
   }
 
   setBottomCase(type: string) {
@@ -285,7 +318,7 @@ export default class Keyboard {
       const mesh = new THREE.Mesh(plateGeometry, this.materials.baseMat);
       mesh.scale.set(1, 1, -1);
       mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
-mesh.position.y = 0.1762;
+      mesh.position.y = 0.1762;
       mesh.name = name;
 
       // Set the group to add the plate to
