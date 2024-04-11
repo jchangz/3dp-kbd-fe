@@ -110,6 +110,39 @@ animate();
 function init() {
   canvas = document.querySelector(".canvas");
 
+  // Materials
+
+  const envMapIntensity = 2;
+  const caseMat = new THREE.MeshStandardMaterial({
+    roughness: 0.8,
+    envMapIntensity: envMapIntensity,
+  });
+  const faceMat = new THREE.MeshStandardMaterial({
+    roughness: 0.4,
+    envMapIntensity: envMapIntensity,
+  });
+  const keyMat = new THREE.MeshStandardMaterial({
+    color: 0x171718,
+    roughness: 0.5,
+    envMapIntensity: envMapIntensity,
+  });
+  const baseMat = new THREE.MeshStandardMaterial({
+    color: 0x171718,
+    roughness: 0.3,
+    envMapIntensity: envMapIntensity,
+  });
+  const pcbMat = new THREE.MeshStandardMaterial({
+    color: 0x046307,
+    roughness: 0.8,
+    envMapIntensity: envMapIntensity,
+  });
+  const usbMat = new THREE.MeshStandardMaterial({
+    metalness: 1,
+    roughness: 0.2,
+    envMapIntensity: envMapIntensity,
+  });
+  caseMat.color = faceMat.color = new THREE.Color(0x171718);
+
   if (canvas) {
     // Create Keyboard
 
@@ -162,37 +195,37 @@ function init() {
       setCameraCenter();
     };
 
-    // Texture Loader
+    // Textures
 
     const texloader = new THREE.TextureLoader(manager);
 
     const caseNormal = texloader.load("models/3dp_normal.webp");
     caseNormal.repeat.set(0, 3);
-    keyboard.caseMat.normalMap = caseNormal;
+    caseMat.normalMap = caseNormal;
 
     const caseRoughness = texloader.load("models/3dp_roughness.webp");
     caseRoughness.repeat.set(0, 3);
-    keyboard.caseMat.roughnessMap = caseRoughness;
+    caseMat.roughnessMap = caseRoughness;
 
     const caseAO = texloader.load("models/3dp_ao.webp");
     caseAO.repeat.set(0, 3);
-    keyboard.caseMat.aoMap = caseAO;
+    caseMat.aoMap = caseAO;
 
     const caseFaceNormal = texloader.load("models/3dp_face.webp");
     caseFaceNormal.repeat.set(25, 25);
-    keyboard.faceMat.normalMap = caseFaceNormal;
+    faceMat.normalMap = caseFaceNormal;
 
     const keyNormal = texloader.load("models/key_normal.webp");
     keyNormal.repeat.set(2, 2);
-    keyboard.keyMat.normalMap = keyNormal;
+    keyMat.normalMap = keyNormal;
 
     const keyRoughness = texloader.load("models/key_roughness.webp");
     keyRoughness.repeat.set(2, 2);
-    keyboard.keyMat.roughnessMap = keyRoughness;
+    keyMat.roughnessMap = keyRoughness;
 
     caseNormal.wrapS = caseNormal.wrapT = caseRoughness.wrapS = caseRoughness.wrapT = caseAO.wrapS = caseAO.wrapT = caseFaceNormal.wrapS = caseFaceNormal.wrapT = keyNormal.wrapS = keyNormal.wrapT = keyRoughness.wrapS = keyRoughness.wrapT = THREE.RepeatWrapping;
 
-    // Environment Loader
+    // Environment
 
     const gainMap = new GainMapLoader(renderer).load(["gainmap/studio.webp", "gainmap/studio-gainmap.webp", "gainmap/studio.json"], function (texture) {
       const gainMapBackground = texture.renderTarget.texture;
@@ -200,7 +233,7 @@ function init() {
       gainMapBackground.needsUpdate = true;
       const gainMapPMREMRenderTarget = pmremGenerator.fromEquirectangular(gainMapBackground);
 
-      keyboard.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
+      caseMat.envMap = faceMat.envMap = usbMat.envMap = pcbMat.envMap = keyMat.envMap = baseMat.envMap = gainMapPMREMRenderTarget ? gainMapPMREMRenderTarget.texture : null;
       gainMap.dispose();
     });
 
