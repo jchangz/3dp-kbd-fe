@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
-import { three } from "../assets/three.json";
+import { three, options } from "../assets/three.json";
 import { geometry } from "../assets/geometry.json";
 
 class Keeb {
@@ -60,6 +60,21 @@ class Keeb {
     this.#selectedOptValue = value;
   }
 
+  setKBOGeometry(data: threeObj, options: { [key: string]: threeObj }) {
+    // Transform kbo specific layouts
+    const newData: { [index: string]: threeObj } = {};
+
+    Object.keys(options).forEach((opt) => {
+      const dataCopy = JSON.parse(JSON.stringify(data));
+      const extraData = options[opt];
+      dataCopy.mx = [...dataCopy.mx, ...extraData.mx];
+      dataCopy.rows = { ...dataCopy.rows, ...extraData.rows };
+      newData[opt] = dataCopy;
+    });
+
+    this.switchGeometry = newData;
+  }
+
   set bottomCase(type: string) {
     this.#selectedOptBottom = type;
     const toHide = type === "standard" ? "vented" : "standard";
@@ -84,6 +99,10 @@ class Keeb {
       });
       this.#switchInstancedMesh.setMatrixAt(i, this.#switch3DMap.matrix);
     }
+  }
+
+  updateInstancedMesh() {
+    if (this.#switchInstancedMesh) this.#switchInstancedMesh.instanceMatrix.needsUpdate = true;
   }
 
   caseLoader({ gltf, caseMat, faceMat, baseMat }: { gltf: GLTF; caseMat: THREE.MeshStandardMaterial; faceMat: THREE.MeshStandardMaterial; baseMat: THREE.MeshStandardMaterial }) {
@@ -208,6 +227,7 @@ class Keeb {
 
 export class LeftKeeb extends Keeb {
   #fileBaseName;
+
   constructor({ keyboardName, keyboardType }: { keyboardName: string; keyboardType: string }) {
     const leftOption = document.querySelector("#left-options input:checked") as HTMLInputElement;
     const selectedOptType = leftOption.dataset.type || "";
@@ -216,8 +236,10 @@ export class LeftKeeb extends Keeb {
     super({ selectedOptType, selectedOptValue });
 
     this.#fileBaseName = `models/type${keyboardType}/t${keyboardType}-${keyboardName.slice(0, 1)}-left`;
+
     this.plateGeometry = (geometry as geometryObj)[keyboardName].left;
-    this.switchGeometry = (three as keyboardObj)[keyboardName].left;
+    if (keyboardName === "kbo") this.setKBOGeometry(three.kbo.left.base, options.blocker.left);
+    else this.switchGeometry = (three as keyboardObj)[keyboardName].left;
   }
 
   getFileName(value?: string) {
@@ -231,6 +253,10 @@ export class LeftKeeb extends Keeb {
 
 export class RightKeeb extends Keeb {
   #fileBaseName;
+
+  #rightShiftGeometry: { [key: string]: mxObj } = {};
+  #rightShiftValue;
+
   constructor({ keyboardName, keyboardType }: { keyboardName: string; keyboardType: string }) {
     const rightOption = document.querySelector("#right-options input:checked") as HTMLInputElement;
     const selectedOptType = rightOption.dataset.type || "";
@@ -238,9 +264,36 @@ export class RightKeeb extends Keeb {
 
     super({ selectedOptType, selectedOptValue });
 
+    const rightShift = document.querySelector("#right-shift input:checked") as HTMLInputElement;
+    this.#rightShiftValue = rightShift?.value;
+
     this.#fileBaseName = `models/type${keyboardType}/t${keyboardType}-${keyboardName.slice(0, 1)}-right`;
+
     this.plateGeometry = (geometry as geometryObj)[keyboardName].right;
-    this.switchGeometry = (three as keyboardObj)[keyboardName].right;
+
+    if (keyboardName === "kbo") {
+      const {
+          blocker: { right },
+          shift,
+        } = options,
+        {
+          kbo: {
+            right: { base },
+          },
+        } = three;
+
+      this.setKBOGeometry(base, right);
+      this.#rightShiftGeometry = shift;
+    } else this.switchGeometry = (three as keyboardObj)[keyboardName].right;
+  }
+
+  get rightShiftData() {
+    if (this.#rightShiftGeometry) return this.#rightShiftGeometry[this.#rightShiftValue];
+    return false;
+  }
+
+  set rightShiftValue(value: string) {
+    this.#rightShiftValue = value;
   }
 
   getFileName(value?: string) {

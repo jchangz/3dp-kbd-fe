@@ -140,13 +140,14 @@ function init() {
   const rightSideInput = document.getElementById("right-options");
   rightSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "right"));
 
-  // const rightShiftInput = document.getElementById("right-shift");
-  // rightShiftInput?.addEventListener("change", function (e) {
-  //   if (e.target instanceof HTMLInputElement) {
-  //     keyboard.rightShift = e.target.value;
-  //     changed = true;
-  //   }
-  // });
+  const rightShiftInput = document.getElementById("right-shift");
+  rightShiftInput?.addEventListener("change", function (e) {
+    if (e.target instanceof HTMLInputElement) {
+      rightKeyboard.rightShiftValue = e.target.value;
+      rightKeyboard.updateInstancedMesh();
+      changed = true;
+    }
+  });
 
   const bottomCaseInput = document.getElementById("bottom-case");
   bottomCaseInput?.addEventListener("change", function (e) {
@@ -328,6 +329,8 @@ function render() {
   const right = rightKeyboard.selectedSwitchGeometry;
 
   var maxLength = Math.max(left.mx.length, right.mx.length);
+
+  if (rightKeyboard.rightShiftData) right.mx[42] = rightKeyboard.rightShiftData;
 
   let i = 0;
   for (let x = 0; x < maxLength; x++) {

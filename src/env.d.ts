@@ -24,10 +24,9 @@ interface geometryObj {
     right: { [key: string]: number[][] };
   };
 }
-interface kboOptions {
-  left: { [key: string]: threeObj };
-  right: { [key: string]: threeObj };
-  shift: { [key: string]: mxObj };
+interface kboData {
+  blocker: { [key: string]: threeObj };
+  shift?: { [key: string]: mxObj };
 }
 interface configOptionsObj {
   title: string;
