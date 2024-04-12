@@ -7,108 +7,37 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { GainMapLoader } from "@monogrid/gainmap-js";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { MathUtils } from "three";
-import Keyboard from "./keyboard";
+import { LeftKeeb, RightKeeb } from "./keyboard";
 import { keyLight, fillLight, shadowPlane } from "./lights";
 
 let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
 const scene = new THREE.Scene();
-const keyboard = new Keyboard(scene);
-let changed = false;
-
-// GUI
-
-const gui = new GUI({ autoPlace: false }),
-  params = {
-    case: keyboard.caseMat.color.getHex(),
-    keycap: keyboard.keyMat.color.getHex(),
-  };
-gui.domElement.id = "gui";
-gui.addColor(params, "case").onChange(function (val) {
-  keyboard.caseMat.color.setHex(val);
-  changed = true;
-});
-gui.addColor(params, "keycap").onChange(function (val) {
-  keyboard.keyMat.color.setHex(val);
-  changed = true;
-});
-gui.open();
-
-// Coordinates for Centering Camera
-
+const mainGroup = new THREE.Group();
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
-// Loading Managers
-
-const manager = new THREE.LoadingManager();
-const dracoLoader = new DRACOLoader(manager);
-dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
-const loader = new GLTFLoader(manager).setDRACOLoader(dracoLoader).setMeshoptDecoder(MeshoptDecoder);
-
-const manager2 = new THREE.LoadingManager();
-manager2.onProgress = (url, loaded, total) => {
-  let progress = (loaded / total) * 100;
-};
-manager2.onLoad = () => {};
-const reloader = new GLTFLoader(manager2).setMeshoptDecoder(MeshoptDecoder);
-
-// Change Keyboard Options
-
-const onKeyboardChange = (e: Event, side: string) => {
-  const { target } = e;
-  if (target instanceof HTMLInputElement) {
-    const {
-      value,
-      dataset: { type },
-    } = target;
-
-    if (type === "macro") {
-      const fileName = keyboard.getFileName(side, value);
-      reloader.loadAsync(fileName).then((gltf: GLTF) => {
-        if (side === "left") keyboard.leftKeyboard = value;
-        if (side === "right") keyboard.rightKeyboard = value;
-        keyboard.caseLoader(gltf, side);
-        keyboard.createKeys(side);
-        setCameraCenter();
-      });
-    } else {
-      if (side === "left") keyboard.leftKeyboard = value;
-      if (side === "right") keyboard.rightKeyboard = value;
-      keyboard.createKeys(side);
-      changed = true;
-    }
-  }
-};
-
-// Event Listeners
-
-const leftSideInput = document.getElementById("left-options");
-leftSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "left"));
-
-const rightSideInput = document.getElementById("right-options");
-rightSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "right"));
-
-const rightShiftInput = document.getElementById("right-shift");
-rightShiftInput?.addEventListener("change", function (e) {
-  if (e.target instanceof HTMLInputElement) {
-    keyboard.rightShift = e.target.value;
-    changed = true;
-  }
-});
-
-const bottomCaseInput = document.getElementById("bottom-case");
-bottomCaseInput?.addEventListener("change", function (e) {
-  if (e.target instanceof HTMLInputElement) {
-    keyboard.setBottomCase(e.target.value);
-    changed = true;
-  }
-});
+let leftKeyboard: LeftKeeb, rightKeyboard: RightKeeb;
+let changed = false;
 
 init();
 animate();
 
 function init() {
   canvas = document.querySelector(".canvas");
+
+  // Loading Managers
+
+  const manager = new THREE.LoadingManager();
+  const dracoLoader = new DRACOLoader(manager);
+  dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+  const loader = new GLTFLoader(manager).setDRACOLoader(dracoLoader).setMeshoptDecoder(MeshoptDecoder);
+
+  const manager2 = new THREE.LoadingManager();
+  manager2.onProgress = (url, loaded, total) => {
+    let progress = (loaded / total) * 100;
+  };
+  manager2.onLoad = () => {};
+  const reloader = new GLTFLoader(manager2).setMeshoptDecoder(MeshoptDecoder);
 
   // Materials
 
@@ -143,12 +72,101 @@ function init() {
   });
   caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
+  // GUI
+
+  const gui = new GUI({ autoPlace: false }),
+    params = {
+      case: caseMat.color.getHex(),
+      keycap: keyMat.color.getHex(),
+    };
+  gui.domElement.id = "gui";
+  gui.addColor(params, "case").onChange(function (val) {
+    caseMat.color.setHex(val);
+    changed = true;
+  });
+  gui.addColor(params, "keycap").onChange(function (val) {
+    keyMat.color.setHex(val);
+    changed = true;
+  });
+  gui.open();
+
+  // Change Keyboard Options
+
+  const onKeyboardChange = (e: Event, side: string) => {
+    const { target } = e;
+    if (target instanceof HTMLInputElement) {
+      const {
+        value,
+        dataset: { type },
+      } = target;
+      if (type === "macro") {
+        let fileName = "";
+        if (side === "left") fileName = leftKeyboard.getFileName(value);
+        if (side === "right") fileName = rightKeyboard.getFileName(value);
+
+        reloader.loadAsync(fileName).then((gltf: GLTF) => {
+          if (side === "left") {
+            leftKeyboard.selectedOptValue = value;
+            leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat });
+            leftKeyboard.createKeys({ scene, keyMat, baseMat });
+          }
+          if (side === "right") {
+            rightKeyboard.selectedOptValue = value;
+            rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat });
+            rightKeyboard.createKeys({ scene, keyMat, baseMat });
+          }
+
+          setCameraCenter();
+        });
+      } else {
+        if (side === "left") {
+          leftKeyboard.selectedOptValue = value;
+          leftKeyboard.createKeys({ scene, keyMat, baseMat });
+        }
+        if (side === "right") {
+          rightKeyboard.selectedOptValue = value;
+          rightKeyboard.createKeys({ scene, keyMat, baseMat });
+        }
+        changed = true;
+      }
+    }
+  };
+
+  // Event Listeners
+
+  const leftSideInput = document.getElementById("left-options");
+  leftSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "left"));
+
+  const rightSideInput = document.getElementById("right-options");
+  rightSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "right"));
+
+  // const rightShiftInput = document.getElementById("right-shift");
+  // rightShiftInput?.addEventListener("change", function (e) {
+  //   if (e.target instanceof HTMLInputElement) {
+  //     keyboard.rightShift = e.target.value;
+  //     changed = true;
+  //   }
+  // });
+
+  const bottomCaseInput = document.getElementById("bottom-case");
+  bottomCaseInput?.addEventListener("change", function (e) {
+    if (e.target instanceof HTMLInputElement) {
+      leftKeyboard.bottomCase = e.target.value;
+      rightKeyboard.bottomCase = e.target.value;
+      changed = true;
+    }
+  });
+
   if (canvas) {
     // Create Keyboard
 
     const keyboardName = canvas.dataset.keyboard || "";
     const keyboardType = canvas.dataset.type || "";
-    keyboard.setKeyboard(keyboardName, keyboardType);
+
+    leftKeyboard = new LeftKeeb({ keyboardName, keyboardType });
+    rightKeyboard = new RightKeeb({ keyboardName, keyboardType });
+
+    mainGroup.add(leftKeyboard.keyboard, rightKeyboard.keyboard);
 
     // Renderer
 
@@ -185,7 +203,7 @@ function init() {
     // On Initial Load
 
     manager.onLoad = () => {
-      scene.add(keyboard.main);
+      scene.add(mainGroup);
       const loadScreen = document.getElementById("three-loading");
       loadScreen?.classList.add("opacity-0");
       loadScreen?.addEventListener("transitionend", (e) => {
@@ -193,9 +211,10 @@ function init() {
       });
       pmremGenerator.dispose();
       setCameraCenter();
+      changed = true;
     };
 
-    // Textures
+    // Texture Loader
 
     const texloader = new THREE.TextureLoader(manager);
 
@@ -225,7 +244,7 @@ function init() {
 
     caseNormal.wrapS = caseNormal.wrapT = caseRoughness.wrapS = caseRoughness.wrapT = caseAO.wrapS = caseAO.wrapT = caseFaceNormal.wrapS = caseFaceNormal.wrapT = keyNormal.wrapS = keyNormal.wrapT = keyRoughness.wrapS = keyRoughness.wrapT = THREE.RepeatWrapping;
 
-    // Environment
+    // Environment Loader
 
     const gainMap = new GainMapLoader(renderer).load(["gainmap/studio.webp", "gainmap/studio-gainmap.webp", "gainmap/studio.json"], function (texture) {
       const gainMapBackground = texture.renderTarget.texture;
@@ -245,15 +264,15 @@ function init() {
 
     // Load Case, Switch, Keycap Files
 
-    loader.load(keyboard.getFileName("left"), (gltf) => keyboard.caseLoader(gltf, "left"));
-    loader.load(keyboard.getFileName("right"), (gltf) => keyboard.caseLoader(gltf, "right"));
+    loader.load(leftKeyboard.getFileName(), (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
+    loader.load(rightKeyboard.getFileName(), (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
 
     loader.load("models/switch.glb", function (gltf) {
       gltf.scene.visible = false;
       scene.add(gltf.scene);
 
-      keyboard.createKeys("left");
-      keyboard.createKeys("right");
+      leftKeyboard.createKeys({ scene, keyMat, baseMat });
+      rightKeyboard.createKeys({ scene, keyMat, baseMat });
     });
 
     // Resize Handler
@@ -264,11 +283,12 @@ function init() {
 }
 
 function setCameraCenter() {
-  centerBox.setFromObject(keyboard.main);
+  centerBox.setFromObject(mainGroup);
   centerBox.getCenter(centerVector);
   camera.lookAt(centerVector);
   camera.updateProjectionMatrix();
   controls.target.set(centerVector.x, centerVector.y, centerVector.z);
+  changed = true;
 }
 
 function setCameraFOV() {
@@ -304,7 +324,18 @@ function animate() {
 }
 
 function render() {
-  keyboard.renderKeys();
+  const left = leftKeyboard.selectedSwitchGeometry;
+  const right = rightKeyboard.selectedSwitchGeometry;
+
+  var maxLength = Math.max(left.mx.length, right.mx.length);
+
+  let i = 0;
+  for (let x = 0; x < maxLength; x++) {
+    if (x < left.mx.length) leftKeyboard.render = i;
+    if (x < right.mx.length) rightKeyboard.render = i;
+    i++;
+  }
+
   controls.update();
   renderer.render(scene, camera);
 }

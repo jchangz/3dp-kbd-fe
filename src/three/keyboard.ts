@@ -1,370 +1,131 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
+import type { GLTF } from "three/examples/jsm/Addons.js";
 import { three } from "../assets/three.json";
 import { geometry } from "../assets/geometry.json";
-import type { GLTF } from "three/examples/jsm/Addons.js";
 
-export default class Keyboard {
-  #scene;
-  #keyboardName = ""; // quefrency, sinc, kbo
-  #fileBaseName = "";
+class Keeb {
+  #pivotGroup = new THREE.Group();
+  #keebGroup = new THREE.Group();
+  #caseGroup = new THREE.Group();
+  #keysGroup = new THREE.Group();
 
-  #bottomCaseDefaultValue = "";
+  #selectedOptType;
+  #selectedOptValue;
+  #selectedOptBottom = "standard";
 
-  #left: { [key: string]: threeObj } = {};
-  #leftDefaultType = "";
-  #leftDefaultValue = "";
+  #switchInstancedMesh?: THREE.InstancedMesh;
+  #switch3DMap = new THREE.Object3D();
 
-  #right: { [key: string]: threeObj } = {};
-  #rightDefaultType = "";
-  #rightDefaultValue = "";
-  #rightShiftData?: { [index: string]: mxObj };
-  #rightShiftDefaultValue?: string;
+  #plateGeometry: { [key: string]: number[][] } = {};
+  #switchGeometry: { [key: string]: threeObj } = {};
 
-  // Main container for left/right group, to be rotated in scene
-  #mainGroup = new THREE.Group();
+  constructor({ selectedOptType, selectedOptValue }: { selectedOptType: string; selectedOptValue: string }) {
+    this.#selectedOptType = selectedOptType;
+    this.#selectedOptValue = selectedOptValue;
 
-  // Parent container to be rotated for mounting
-  #leftPivotGroup = new THREE.Group();
-  #rightPivotGroup = new THREE.Group();
+    const bottomTypeInput = document.querySelector("#bottom-case input:checked") as HTMLInputElement;
+    this.#selectedOptBottom = bottomTypeInput?.value;
 
-  // Container holding keycaps, case & switches
-  #leftGroup = new THREE.Group();
-  #rightGroup = new THREE.Group();
-
-  // Container holding case meshes
-  #leftCaseGroup = new THREE.Group();
-  #rightCaseGroup = new THREE.Group();
-
-  // Container holding keycap instanced meshes
-  #keysGroupLeft = new THREE.Group();
-  #leftSwitchMesh?: THREE.InstancedMesh;
-  #leftSwitch3DMap = new THREE.Object3D();
-  #keysGroupRight = new THREE.Group();
-  #rightSwitchMesh?: THREE.InstancedMesh;
-  #rightSwitch3DMap = new THREE.Object3D();
-
-  // Materials
-  caseMat: THREE.MeshStandardMaterial;
-  faceMat: THREE.MeshStandardMaterial;
-  baseMat: THREE.MeshStandardMaterial;
-  keyMat: THREE.MeshStandardMaterial;
-  pcbMat: THREE.MeshStandardMaterial;
-  usbMat: THREE.MeshStandardMaterial;
-
-  constructor(scene: THREE.Scene) {
-    this.#scene = scene;
-
-    this.#leftGroup.add(this.#leftCaseGroup, this.#keysGroupLeft);
-    this.#rightGroup.add(this.#rightCaseGroup, this.#keysGroupRight);
-
-    this.#leftPivotGroup.add(this.#leftGroup);
-    this.#rightPivotGroup.add(this.#rightGroup);
-
-    this.#mainGroup.add(this.#leftPivotGroup, this.#rightPivotGroup);
-    this.#mainGroup.rotation.y = Math.PI / 2;
-
-    const leftDefault = document.querySelector("#left-options input:checked") as HTMLInputElement;
-    this.#leftDefaultType = leftDefault.dataset.type || "";
-    this.#leftDefaultValue = leftDefault?.value || "";
-
-    const rightDefault = document.querySelector("#right-options input:checked") as HTMLInputElement;
-    this.#rightDefaultType = rightDefault?.dataset.type || "";
-    this.#rightDefaultValue = rightDefault?.value || "";
-
-    const rightShiftDefault = document.querySelector("#right-shift input:checked") as HTMLInputElement;
-    this.#rightShiftDefaultValue = rightShiftDefault?.value;
-
-    const bottomCaseDefault = document.querySelector("#bottom-case input:checked") as HTMLInputElement;
-    this.#bottomCaseDefaultValue = bottomCaseDefault?.value;
-
-    const envMapIntensity = 2;
-    this.caseMat = new THREE.MeshStandardMaterial({
-      roughness: 0.8,
-      envMapIntensity: envMapIntensity,
-    });
-    this.faceMat = new THREE.MeshStandardMaterial({
-      roughness: 0.4,
-      envMapIntensity: envMapIntensity,
-    });
-    this.caseMat.color = this.faceMat.color = new THREE.Color(0x171718);
-    this.baseMat = new THREE.MeshStandardMaterial({
-      color: 0x171718,
-      roughness: 0.3,
-      envMapIntensity: envMapIntensity,
-    });
-    this.keyMat = new THREE.MeshStandardMaterial({
-      color: 0x171718,
-      roughness: 0.5,
-      envMapIntensity: envMapIntensity,
-    });
-    this.pcbMat = new THREE.MeshStandardMaterial({
-      color: 0x046307,
-      roughness: 0.8,
-      envMapIntensity: envMapIntensity,
-    });
-    this.usbMat = new THREE.MeshStandardMaterial({
-      metalness: 1,
-      roughness: 0.2,
-      envMapIntensity: envMapIntensity,
-    });
+    this.#keebGroup.add(this.#caseGroup, this.#keysGroup);
+    this.#keebGroup.rotation.y = Math.PI / 2;
+    this.#pivotGroup.add(this.#keebGroup);
   }
 
-  get main() {
-    return this.#mainGroup;
-  }
-  set leftKeyboard(value: string) {
-    this.#leftDefaultValue = value;
-  }
-  set rightKeyboard(value: string) {
-    this.#rightDefaultValue = value;
-  }
-  set rightShift(value: string) {
-    this.#rightShiftDefaultValue = value;
-  }
-  set bottomCase(value: string) {
-    this.#bottomCaseDefaultValue = value;
-  }
-  set envMap(envMapTexture: THREE.Texture | null) {
-    this.caseMat.envMap = this.faceMat.envMap = this.baseMat.envMap = this.keyMat.envMap = this.pcbMat.envMap = this.usbMat.envMap = envMapTexture;
+  get keyboard() {
+    return this.#pivotGroup;
   }
 
-  caseLoader(gltf: GLTF, side: string) {
+  get selectedSwitchGeometry() {
+    return this.#switchGeometry[this.#selectedOptValue];
+  }
+
+  get selectedOptType() {
+    return this.#selectedOptType;
+  }
+
+  get selectedOptValue() {
+    return this.#selectedOptValue;
+  }
+
+  set plateGeometry(data: { [key: string]: number[][] }) {
+    this.#plateGeometry = data;
+  }
+
+  set switchGeometry(data: { [key: string]: threeObj }) {
+    this.#switchGeometry = data;
+  }
+
+  set selectedOptValue(value: string) {
+    this.#selectedOptValue = value;
+  }
+
+  set bottomCase(type: string) {
+    this.#selectedOptBottom = type;
+    const toHide = type === "standard" ? "vented" : "standard";
+    const caseToShow = this.#caseGroup.getObjectByName(type);
+    const caseToHide = this.#caseGroup.getObjectByName(toHide);
+    if (caseToHide && caseToShow) {
+      caseToHide.visible = false;
+      caseToShow.visible = true;
+    }
+  }
+
+  set render(i: number) {
+    if (this.#switchInstancedMesh) {
+      const { mx, rows } = this.selectedSwitchGeometry;
+      this.#switch3DMap.position.set(mx[i].x, mx[i].y, mx[i].z);
+      this.#switch3DMap.updateMatrix();
+
+      this.#keysGroup.children.forEach((mesh) => {
+        if (mesh instanceof THREE.InstancedMesh && rows[mesh.name].matrix[i]) {
+          mesh.setMatrixAt(rows[mesh.name].matrix[i] - 1, this.#switch3DMap.matrix);
+        }
+      });
+      this.#switchInstancedMesh.setMatrixAt(i, this.#switch3DMap.matrix);
+    }
+  }
+
+  caseLoader({ gltf, caseMat, faceMat, baseMat }: { gltf: GLTF; caseMat: THREE.MeshStandardMaterial; faceMat: THREE.MeshStandardMaterial; baseMat: THREE.MeshStandardMaterial }) {
     const filesToAdd: THREE.Group[] = [];
-    const bottomCase = this.#bottomCaseDefaultValue;
 
     gltf.scene.traverse((child) => {
       if (child instanceof THREE.Mesh && child.isMesh) {
         child.castShadow = true;
-        if (child.name.includes("_2")) child.material = this.faceMat;
-        else child.material = this.caseMat;
+        if (child.name.includes("_2")) child.material = faceMat;
+        else child.material = caseMat;
       }
       if (child instanceof THREE.Group && child.name !== "Scene") {
         child.visible = false;
-        if (child.name === "top" || child.name === bottomCase) child.visible = true;
+        if (child.name === "top" || child.name === this.#selectedOptBottom) child.visible = true;
         filesToAdd.push(child);
       }
     });
 
-    this.#createPlates(side);
+    this.#createPlates({ baseMat });
 
-    if (side === "left") this.#leftCaseGroup.clear();
-    if (side === "right") this.#rightCaseGroup.clear();
-
-    for (let i = 0; i < filesToAdd.length; i++) {
-      if (side === "left") this.#leftCaseGroup.add(filesToAdd[i]);
-      if (side === "right") this.#rightCaseGroup.add(filesToAdd[i]);
-    }
+    this.#caseGroup.clear();
+    for (let i = 0; i < filesToAdd.length; i++) this.#caseGroup.add(filesToAdd[i]);
   }
 
-  setBottomCase(type: string) {
-    this.#bottomCaseDefaultValue = type;
-    const toHide = type === "standard" ? "vented" : "standard";
-    const groupsToShow = this.#mainGroup.getObjectsByProperty("name", type);
-    const groupsToHide = this.#mainGroup.getObjectsByProperty("name", toHide);
-    if (groupsToHide.length && groupsToShow.length) {
-      for (let i = 0; i < groupsToHide.length; i++) {
-        groupsToHide[i].visible = false;
-        groupsToShow[i].visible = true;
+  #createPlates({ baseMat }: { baseMat: THREE.MeshStandardMaterial }) {
+    let selectedPlateOption;
+    if (this.#selectedOptType !== "macro") selectedPlateOption = "base";
+    else {
+      switch (this.#selectedOptValue) {
+        case "60":
+          selectedPlateOption = "no-macro";
+          break;
+        case "65":
+        case "65-b":
+          selectedPlateOption = "macro";
+          break;
+        default:
+          selectedPlateOption = this.#selectedOptValue;
+          break;
       }
     }
-  }
-
-  getFileName(side: string, value?: string) {
-    let string = `${this.#fileBaseName}-${side}`;
-    const leftSideValue = value || this.#leftDefaultValue;
-    const rightSideValue = value || this.#rightDefaultValue;
-
-    if (side === "left") {
-      if (leftSideValue === "macro") string += "-macro";
-    }
-    if (side === "right") {
-      if (this.#rightDefaultType === "macro") {
-        if (rightSideValue === "60") string += "-60";
-        else string += "-65";
-      }
-    }
-    string += ".glb";
-
-    return string;
-  }
-
-  setKeyboard(keyboardName: string, keyboardType: string) {
-    this.#keyboardName = keyboardName;
-    this.#fileBaseName = `models/type${keyboardType}/t${keyboardType}-${keyboardName.slice(0, 1)}`;
-
-    let { left, right } = (three as keyboardObj)[this.#keyboardName];
-
-    // transform kbo specific layouts
-    if (keyboardName === "kbo") {
-      const options = three.options as kboOptions;
-      const newLeft: { [index: string]: threeObj } = {};
-      const newRight: { [index: string]: threeObj } = {};
-
-      this.#rightShiftData = options.shift;
-
-      Object.keys(options.left).forEach((opt) => {
-        const leftCopy = JSON.parse(JSON.stringify(left.base));
-        const extraLeft = options.left[opt];
-        leftCopy.mx = [...leftCopy.mx, ...extraLeft.mx];
-        leftCopy.rows = { ...leftCopy.rows, ...extraLeft.rows };
-        newLeft[opt] = leftCopy;
-      });
-      Object.keys(options.right).forEach((opt) => {
-        const leftCopy = JSON.parse(JSON.stringify(right.base));
-        const extraLeft = options.right[opt];
-        leftCopy.mx = [...leftCopy.mx, ...extraLeft.mx];
-        leftCopy.rows = { ...leftCopy.rows, ...extraLeft.rows };
-        newRight[opt] = leftCopy;
-      });
-
-      left = newLeft;
-      right = newRight;
-    }
-
-    this.#left = left;
-    this.#right = right;
-  }
-
-  setPivotPoint() {
-    const groups = [
-      { group: this.#leftGroup, pivot: this.#leftPivotGroup, direction: 1 },
-      { group: this.#rightGroup, pivot: this.#rightPivotGroup, direction: -1 },
-    ];
-
-    groups.forEach((item) => {
-      const bbox = new THREE.Box3().setFromObject(item.group);
-      bbox.getCenter(item.group.position);
-      item.group.position.multiplyScalar(-1);
-
-      const xShift = (Math.abs(bbox.max.x) + Math.abs(bbox.min.x)) / 2;
-      const yShift = (Math.abs(bbox.max.y) + Math.abs(bbox.min.y)) / 2;
-
-      item.group.position.set(item.group.position.x + item.direction * xShift, -item.group.position.y - yShift, -item.group.position.z);
-
-      item.pivot.position.set(-item.group.position.x, -item.group.position.y, item.group.position.z);
-    });
-  }
-
-  createKeys(side: string) {
-    const _switchMesh = this.#scene.getObjectByName("switch");
-
-    let switchData;
-    if (side === "left") switchData = this.#left[this.#leftDefaultValue];
-    if (side === "right") switchData = this.#right[this.#rightDefaultValue];
-
-    if (switchData) {
-      const name = "switches";
-      // Set the group to add the switches to
-      const currentGroup = side === "left" ? this.#leftGroup : this.#rightGroup;
-      // Set the group to add the keycaps to
-      const currentKeyGroup = side === "left" ? this.#keysGroupLeft : this.#keysGroupRight;
-
-      // Remove the previous switches if it exists
-      const filesToDispose: THREE.Object3D[] = [];
-      if (currentGroup.children.length) {
-        currentGroup.traverse((child) => {
-          if (child instanceof THREE.InstancedMesh && child.name === name) {
-            filesToDispose.push(child);
-            child.geometry.dispose();
-          }
-        });
-        currentKeyGroup.traverse((instMesh) => {
-          if (instMesh instanceof THREE.InstancedMesh) instMesh.geometry.dispose();
-        });
-        currentKeyGroup.clear();
-
-        if (filesToDispose.length) {
-          for (var i = 0, n = filesToDispose.length; i < n; i++) currentGroup.remove(filesToDispose[i]);
-        }
-      }
-
-      const rowData = switchData.rows;
-      Object.keys(rowData).forEach((row) => {
-        const _keycapMesh = this.#scene.getObjectByName(row);
-        if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
-          const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), this.keyMat, rowData[row].length);
-          keycapMesh.name = row;
-          keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-          currentKeyGroup.add(keycapMesh);
-        }
-      });
-
-      if (_switchMesh instanceof THREE.Mesh) {
-        if (side === "left") {
-          this.#leftSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), this.baseMat, switchData.mx.length);
-          this.#leftSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-          this.#leftSwitchMesh.name = name;
-          this.#leftGroup.add(this.#leftSwitchMesh);
-        }
-        if (side === "right") {
-          this.#rightSwitchMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), this.baseMat, switchData.mx.length);
-          this.#rightSwitchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-          this.#rightSwitchMesh.name = name;
-          this.#rightGroup.add(this.#rightSwitchMesh);
-        }
-      }
-    }
-  }
-
-  renderKeys() {
-    if (this.#leftSwitchMesh && this.#rightSwitchMesh) {
-      const left = this.#left[this.#leftDefaultValue];
-      const right = this.#right[this.#rightDefaultValue];
-      var maxLength = Math.max(left.mx.length, right.mx.length);
-
-      if (this.#keyboardName === "kbo" && this.#rightShiftData && this.#rightShiftDefaultValue) {
-        right.mx[42] = this.#rightShiftData[this.#rightShiftDefaultValue];
-      }
-
-      let i = 0;
-      for (let x = 0; x < maxLength; x++) {
-        if (x < left.mx.length) {
-          this.#leftSwitch3DMap.position.set(left.mx[i].x, left.mx[i].y, left.mx[i].z);
-          this.#leftSwitch3DMap.updateMatrix();
-
-          this.#keysGroupLeft.children.forEach((mesh) => {
-            if (mesh instanceof THREE.InstancedMesh && left.rows[mesh.name].matrix[i]) {
-              mesh.setMatrixAt(left.rows[mesh.name].matrix[i] - 1, this.#leftSwitch3DMap.matrix);
-            }
-          });
-          this.#leftSwitchMesh.setMatrixAt(i, this.#leftSwitch3DMap.matrix);
-        }
-        if (x < right.mx.length) {
-          this.#rightSwitch3DMap.position.set(right.mx[i].x, right.mx[i].y, right.mx[i].z);
-          this.#rightSwitch3DMap.updateMatrix();
-
-          this.#keysGroupRight.children.forEach((mesh) => {
-            if (mesh instanceof THREE.InstancedMesh && right.rows[mesh.name].matrix[i]) {
-              mesh.setMatrixAt(right.rows[mesh.name].matrix[i] - 1, this.#rightSwitch3DMap.matrix);
-            }
-          });
-          this.#rightSwitchMesh.setMatrixAt(i, this.#rightSwitch3DMap.matrix);
-        }
-        i++;
-      }
-      this.#leftSwitchMesh.instanceMatrix.needsUpdate = true;
-      this.#rightSwitchMesh.instanceMatrix.needsUpdate = true;
-    }
-  }
-
-  #createPlates(side: string) {
-    const data = (geometry as geometryObj)[this.#keyboardName];
-
-    let defaultType = side === "left" ? this.#leftDefaultType : this.#rightDefaultType;
-    let defaultTypeValue = side === "left" ? this.#leftDefaultValue : this.#rightDefaultValue;
-
-    if (defaultType !== "macro") defaultTypeValue = "base";
-
-    if (this.#keyboardName === "quefrency" && side === "right") {
-      // Quefrency right plate: 65 = macro, 60 = no-macro
-      if (this.#rightDefaultValue === "60") defaultTypeValue = "no-macro";
-      else defaultTypeValue = "macro";
-    }
-
-    let plateData;
-    if (side === "left") plateData = data && data.left[defaultTypeValue];
-    if (side === "right") plateData = data && data.right[defaultTypeValue];
+    const plateData = this.#plateGeometry[selectedPlateOption];
 
     if (plateData) {
       const name = "plate";
@@ -374,30 +135,123 @@ export default class Keyboard {
         depth: 0.016,
         bevelEnabled: false,
       });
-      const mesh = new THREE.Mesh(plateGeometry, this.baseMat);
+      const mesh = new THREE.Mesh(plateGeometry, baseMat);
       mesh.scale.set(1, 1, -1);
       mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
       mesh.position.y = 0.1762;
       mesh.name = name;
 
-      // Set the group to add the plate to
-      const currentGroup = side === "left" ? this.#leftGroup : this.#rightGroup;
-
       // Remove the previous plate mesh if it exists
       const filesToDispose: THREE.Object3D[] = [];
-      if (currentGroup.children.length) {
-        currentGroup.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.name === "plate") {
+      if (this.#keebGroup.children.length) {
+        this.#keebGroup.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.name === name) {
             filesToDispose.push(child);
             child.geometry.dispose();
           }
         });
         if (filesToDispose.length) {
-          for (var i = 0, n = filesToDispose.length; i < n; i++) currentGroup.remove(filesToDispose[i]);
+          for (var i = 0, n = filesToDispose.length; i < n; i++) this.#keebGroup.remove(filesToDispose[i]);
         }
       }
 
-      currentGroup.add(mesh);
+      this.#keebGroup.add(mesh);
     }
+  }
+
+  createKeys({ scene, keyMat, baseMat }: { scene: THREE.Scene; keyMat: THREE.MeshStandardMaterial; baseMat: THREE.MeshStandardMaterial }) {
+    const _switchMesh = scene.getObjectByName("switch");
+    const switchData = this.selectedSwitchGeometry;
+
+    if (switchData && _switchMesh) {
+      const name = "switches";
+      // Remove the previous switches if it exists
+      const filesToDispose: THREE.Object3D[] = [];
+      if (this.#keebGroup.children.length) {
+        this.#keebGroup.traverse((child) => {
+          if (child instanceof THREE.InstancedMesh && child.name === name) {
+            filesToDispose.push(child);
+            child.geometry.dispose();
+          }
+        });
+        this.#keysGroup.traverse((instMesh) => {
+          if (instMesh instanceof THREE.InstancedMesh) instMesh.geometry.dispose();
+        });
+        this.#keysGroup.clear();
+
+        if (filesToDispose.length) {
+          for (var i = 0, n = filesToDispose.length; i < n; i++) this.#keebGroup.remove(filesToDispose[i]);
+        }
+      }
+
+      const { rows, mx } = switchData;
+
+      Object.keys(rows).forEach((row) => {
+        const _keycapMesh = scene.getObjectByName(row);
+        if (_keycapMesh && _keycapMesh instanceof THREE.Mesh) {
+          const keycapMesh = new THREE.InstancedMesh(_keycapMesh.geometry.clone(), keyMat, rows[row].length);
+          keycapMesh.name = row;
+          keycapMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          this.#keysGroup.add(keycapMesh);
+        }
+      });
+
+      if (_switchMesh instanceof THREE.Mesh) {
+        this.#switchInstancedMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, mx.length);
+        this.#switchInstancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        this.#switchInstancedMesh.name = name;
+        this.#keebGroup.add(this.#switchInstancedMesh);
+      }
+    }
+  }
+}
+
+export class LeftKeeb extends Keeb {
+  #fileBaseName;
+  constructor({ keyboardName, keyboardType }: { keyboardName: string; keyboardType: string }) {
+    const leftOption = document.querySelector("#left-options input:checked") as HTMLInputElement;
+    const selectedOptType = leftOption.dataset.type || "";
+    const selectedOptValue = leftOption?.value || "";
+
+    super({ selectedOptType, selectedOptValue });
+
+    this.#fileBaseName = `models/type${keyboardType}/t${keyboardType}-${keyboardName.slice(0, 1)}-left`;
+    this.plateGeometry = (geometry as geometryObj)[keyboardName].left;
+    this.switchGeometry = (three as keyboardObj)[keyboardName].left;
+  }
+
+  getFileName(value?: string) {
+    let string = this.#fileBaseName;
+    const leftSideValue = value || this.selectedOptValue;
+    if (leftSideValue === "macro") string += "-macro";
+
+    return (string += ".glb");
+  }
+}
+
+export class RightKeeb extends Keeb {
+  #fileBaseName;
+  constructor({ keyboardName, keyboardType }: { keyboardName: string; keyboardType: string }) {
+    const rightOption = document.querySelector("#right-options input:checked") as HTMLInputElement;
+    const selectedOptType = rightOption.dataset.type || "";
+    const selectedOptValue = rightOption?.value || "";
+
+    super({ selectedOptType, selectedOptValue });
+
+    this.#fileBaseName = `models/type${keyboardType}/t${keyboardType}-${keyboardName.slice(0, 1)}-right`;
+    this.plateGeometry = (geometry as geometryObj)[keyboardName].right;
+    this.switchGeometry = (three as keyboardObj)[keyboardName].right;
+  }
+
+  getFileName(value?: string) {
+    let string = this.#fileBaseName;
+    const caseOpt = value || this.selectedOptValue;
+
+    if (this.selectedOptType === "macro") {
+      if (caseOpt === "60") string += "-60";
+      else string += "-65";
+    }
+
+    return (string += ".glb");
   }
 }
