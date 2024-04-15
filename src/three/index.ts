@@ -7,8 +7,10 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { GainMapLoader } from "@monogrid/gainmap-js";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { MathUtils } from "three";
-import { LeftKeeb, RightKeeb } from "./keyboard";
+import { LeftKeeb, RightKeeb, Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
 import { keyLight, fillLight, shadowPlane } from "./lights";
+
+type KBSide = "left" | "right";
 
 let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
 const scene = new THREE.Scene();
@@ -92,42 +94,31 @@ function init() {
 
   // Change Keyboard Options
 
-  const onKeyboardChange = (e: Event, side: string) => {
+  const onKeyboardChange = async (e: Event, side: KBSide) => {
     const { target } = e;
     if (target instanceof HTMLInputElement) {
       const {
         value,
         dataset: { type },
       } = target;
-      if (type === "macro") {
-        let fileName = "";
-        if (side === "left") fileName = leftKeyboard.getFileName(value);
-        if (side === "right") fileName = rightKeyboard.getFileName(value);
 
-        reloader.loadAsync(fileName).then((gltf: GLTF) => {
-          if (side === "left") {
-            leftKeyboard.selectedOptValue = value;
-            leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat });
-            leftKeyboard.createKeys({ scene, keyMat, baseMat });
-          }
-          if (side === "right") {
-            rightKeyboard.selectedOptValue = value;
-            rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat });
-            rightKeyboard.createKeys({ scene, keyMat, baseMat });
-          }
+      let keyboardSide;
+      if (side === "left") keyboardSide = leftKeyboard;
+      if (side === "right") keyboardSide = rightKeyboard;
 
+      if (keyboardSide instanceof Keeb && isValidKeyboardVariant(value)) {
+        if (type === "macro") {
+          const fileName = keyboardSide.getFileName(value);
+          const gltf = await reloader.loadAsync(fileName);
+          keyboardSide.selectedOptValue = value;
+          keyboardSide.caseLoader({ gltf, caseMat, faceMat, baseMat });
+          keyboardSide.createKeys({ scene, keyMat, baseMat });
           setCameraCenter();
-        });
-      } else {
-        if (side === "left") {
-          leftKeyboard.selectedOptValue = value;
-          leftKeyboard.createKeys({ scene, keyMat, baseMat });
+        } else {
+          keyboardSide.selectedOptValue = value;
+          keyboardSide.createKeys({ scene, keyMat, baseMat });
+          changed = true;
         }
-        if (side === "right") {
-          rightKeyboard.selectedOptValue = value;
-          rightKeyboard.createKeys({ scene, keyMat, baseMat });
-        }
-        changed = true;
       }
     }
   };
@@ -142,8 +133,9 @@ function init() {
 
   const rightShiftInput = document.getElementById("right-shift");
   rightShiftInput?.addEventListener("change", function (e) {
-    if (e.target instanceof HTMLInputElement) {
-      rightKeyboard.rightShiftValue = e.target.value;
+    const { target } = e;
+    if (target instanceof HTMLInputElement) {
+      rightKeyboard.rightShiftValue = target.value;
       rightKeyboard.updateInstancedMesh();
       changed = true;
     }
@@ -151,24 +143,15 @@ function init() {
 
   const bottomCaseInput = document.getElementById("bottom-case");
   bottomCaseInput?.addEventListener("change", function (e) {
-    if (e.target instanceof HTMLInputElement) {
-      leftKeyboard.bottomCase = e.target.value;
-      rightKeyboard.bottomCase = e.target.value;
+    const { target } = e;
+    if (target instanceof HTMLInputElement) {
+      leftKeyboard.bottomCase = target.value;
+      rightKeyboard.bottomCase = target.value;
       changed = true;
     }
   });
 
   if (canvas) {
-    // Create Keyboard
-
-    const keyboardName = canvas.dataset.keyboard || "";
-    const keyboardType = canvas.dataset.type || "";
-
-    leftKeyboard = new LeftKeeb({ keyboardName, keyboardType });
-    rightKeyboard = new RightKeeb({ keyboardName, keyboardType });
-
-    mainGroup.add(leftKeyboard.keyboard, rightKeyboard.keyboard);
-
     // Renderer
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -263,18 +246,28 @@ function init() {
     scene.add(fillLight);
     scene.add(shadowPlane);
 
+    // Create Keyboard
     // Load Case, Switch, Keycap Files
+    const {
+      dataset: { keyboard, type },
+    } = canvas;
 
-    loader.load(leftKeyboard.getFileName(), (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
-    loader.load(rightKeyboard.getFileName(), (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
+    if (keyboard && isValidKeyboardName(keyboard) && type && isValidKeyboardType(type)) {
+      leftKeyboard = new LeftKeeb({ keyboard, type });
+      rightKeyboard = new RightKeeb({ keyboard, type });
+      mainGroup.add(leftKeyboard.keyboard, rightKeyboard.keyboard);
 
-    loader.load("models/switch.glb", function (gltf) {
-      gltf.scene.visible = false;
-      scene.add(gltf.scene);
+      loader.load(leftKeyboard.getFileName(), (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
+      loader.load(rightKeyboard.getFileName(), (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
 
-      leftKeyboard.createKeys({ scene, keyMat, baseMat });
-      rightKeyboard.createKeys({ scene, keyMat, baseMat });
-    });
+      loader.load("models/switch.glb", function (gltf) {
+        gltf.scene.visible = false;
+        scene.add(gltf.scene);
+
+        leftKeyboard.createKeys({ scene, keyMat, baseMat });
+        rightKeyboard.createKeys({ scene, keyMat, baseMat });
+      });
+    }
 
     // Resize Handler
 
@@ -325,18 +318,22 @@ function animate() {
 }
 
 function render() {
-  const left = leftKeyboard.selectedSwitchGeometry;
-  const right = rightKeyboard.selectedSwitchGeometry;
+  if (leftKeyboard && rightKeyboard) {
+    const left = leftKeyboard.selectedSwitchGeometry;
+    const right = rightKeyboard.selectedSwitchGeometry;
 
-  var maxLength = Math.max(left.mx.length, right.mx.length);
+    if (left && right) {
+      var maxLength = Math.max(left.mx.length, right.mx.length);
 
-  if (rightKeyboard.rightShiftData) right.mx[42] = rightKeyboard.rightShiftData;
-
-  let i = 0;
-  for (let x = 0; x < maxLength; x++) {
-    if (x < left.mx.length) leftKeyboard.render = i;
-    if (x < right.mx.length) rightKeyboard.render = i;
-    i++;
+      if (rightKeyboard.rightShiftData) right.mx[42] = rightKeyboard.rightShiftData;
+      console.log(rightKeyboard.rightShiftData);
+      let i = 0;
+      for (let x = 0; x < maxLength; x++) {
+        if (x < left.mx.length) leftKeyboard.render = i;
+        if (x < right.mx.length) rightKeyboard.render = i;
+        i++;
+      }
+    }
   }
 
   controls.update();

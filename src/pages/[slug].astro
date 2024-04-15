@@ -4,15 +4,29 @@ import Three from "../components/Three.astro";
 import json from "../assets/routes.json";
 import { config } from "../assets/config.json";
 
+type ConfigOptionsObj = {
+  title: string;
+  "data-type": string;
+  value: string;
+  default: boolean;
+}
+type ConfigObj = {
+  [key: string]: {
+    left: ConfigOptionsObj[];
+    right: ConfigOptionsObj[];
+    shift?: ConfigOptionsObj[];
+  };
+}
+
 interface Props {
   slug: string;
   title: string;
   kbdType: string;
   caseType: string;
-  leftOptions: configOptionsObj[];
-  rightOptions: configOptionsObj[];
-  shiftOptions: configOptionsObj[];
-  bottomOptions: configOptionsObj[];
+  leftOptions: ConfigOptionsObj[];
+  rightOptions: ConfigOptionsObj[];
+  shiftOptions: ConfigOptionsObj[];
+  bottomOptions: ConfigOptionsObj[];
 }
 
 export async function getStaticPaths() {
@@ -26,7 +40,7 @@ export async function getStaticPaths() {
     };
   });
   return pages.map(({ slug, title, kbdType, caseType }) => {
-    const { left: leftOptions, right: rightOptions, shift: shiftOptions } = (config as configObj)[kbdType];
+    const { left: leftOptions, right: rightOptions, shift: shiftOptions } = (config as ConfigObj)[kbdType];
     let bottomOptions;
     if (caseType === "1" || caseType === "3" || caseType === "g") {
       bottomOptions = [
