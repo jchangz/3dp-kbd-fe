@@ -3,6 +3,40 @@ import mathutils
 from math import radians
 
 
+class TOOL_OT_3dp_initialize(bpy.types.Operator):
+    bl_idname = "3dp.init"
+    bl_label = "unwrap uv"
+    bl_description = "project uv from view"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        if context.active_object.mode != "OBJECT":
+            self.report({"ERROR"}, "Not in Object Mode")
+            return {"CANCELLED"}
+
+        obj = context.active_object
+
+        obj.scale = (0.01, 0.01, 0.01)
+        obj.rotation_euler = mathutils.Euler((0.0, 0.0, 0.0), "XYZ")
+
+        verts = [vert.co for vert in obj.data.vertices]
+        plain_verts = [list(vert.to_tuple()) for vert in verts]
+
+        height = 0
+        for x in plain_verts:
+            vert = round(x[2], 6)
+            if vert < height:
+                height = vert
+
+        obj.location = (0.0, 0.0, abs(height) / 100)
+        bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
+        bpy.ops.object.mode_set(mode="EDIT")
+        bpy.ops.mesh.separate(type="LOOSE")
+        bpy.ops.object.mode_set(mode="OBJECT")
+
+        return {"FINISHED"}
+
+
 class TOOL_OT_3dp_unwrap(bpy.types.Operator):
     bl_idname = "3dp.unwrap"
     bl_label = "unwrap uv"
@@ -29,7 +63,6 @@ class TOOL_OT_3dp_unwrap(bpy.types.Operator):
             self.report({"ERROR"}, "No Faces Selected")
             return {"CANCELLED"}
 
-        # camera_data = bpy.data.cameras["Camera"]
         camera_data.type = "ORTHO"
 
         cam_rot = mathutils.Euler((radians(90), 0.0, radians(-90)), "XYZ")
@@ -68,25 +101,30 @@ class VIEW3D_PT_3dpkbd_uv_panel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
 
-    bl_category = "3DP UV"
-    bl_label = "UV Unwrapper"
+    bl_category = "3DPKBD Tool"
+    bl_label = "3DPKBD Tool"
 
     def draw(self, context):
         row = self.layout.row()
-        row.operator("3dp.unwrap", text="Side UV Projection").foo = "side"
-        row = self.layout.row()
-        row.operator("3dp.unwrap", text="Top UV Projection").foo = "top"
-        row = self.layout.row()
-        row.operator("3dp.unwrap", text="Bottom UV Projection").foo = "bottom"
+        row.operator("3dp.init", text="Initialize Model")
+        box = self.layout.box()
+        box.label(text="UV Project from View")
+        col = box.column(align=True)
+        row = col.row()
+        row.operator("3dp.unwrap", text="Side").foo = "side"
+        row.operator("3dp.unwrap", text="Top").foo = "top"
+        row.operator("3dp.unwrap", text="Bottom").foo = "bottom"
 
 
 def register():
     bpy.utils.register_class(TOOL_OT_3dp_unwrap)
+    bpy.utils.register_class(TOOL_OT_3dp_initialize)
     bpy.utils.register_class(VIEW3D_PT_3dpkbd_uv_panel)
 
 
 def unregister():
     bpy.utils.unregister_class(TOOL_OT_3dp_unwrap)
+    bpy.utils.unregister_class(TOOL_OT_3dp_initialize)
     bpy.utils.unregister_class(VIEW3D_PT_3dpkbd_uv_panel)
 
 
