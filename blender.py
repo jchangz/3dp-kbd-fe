@@ -1,0 +1,94 @@
+import bpy
+import mathutils
+from math import radians
+
+
+class TOOL_OT_3dp_unwrap(bpy.types.Operator):
+    bl_idname = "3dp.unwrap"
+    bl_label = "unwrap uv"
+    bl_description = "project uv from view"
+    bl_options = {"REGISTER", "UNDO"}
+    foo: bpy.props.StringProperty(name="String Value")
+
+    def execute(self, context):
+        camera_data = bpy.data.cameras.get("3DPCamera")
+
+        if camera_data is None:
+            camera_data = bpy.data.cameras.new(name="3DPCamera")
+            my_camera = bpy.data.objects.new("3DPCamera", camera_data)
+
+            context.scene.collection.objects.link(my_camera)
+        else:
+            my_camera = bpy.data.objects["3DPCamera"]
+
+        if context.active_object.mode != "EDIT":
+            self.report({"ERROR"}, "Not in Edit Mode")
+            return {"CANCELLED"}
+
+        if context.active_object.data.total_face_sel == 0:
+            self.report({"ERROR"}, "No Faces Selected")
+            return {"CANCELLED"}
+
+        # camera_data = bpy.data.cameras["Camera"]
+        camera_data.type = "ORTHO"
+
+        cam_rot = mathutils.Euler((radians(90), 0.0, radians(-90)), "XYZ")
+        cam_loc = (-9.4902, 0.0000, 0.0000)
+        camera_data.ortho_scale = 2
+
+        if self.foo == "top":
+            cam_rot = mathutils.Euler((radians(6), 0.0, 0.0), "XYZ")
+            cam_loc = (0.000, 0.6666, 5.0786)
+            camera_data.ortho_scale = 5
+        if self.foo == "bottom":
+            cam_rot = mathutils.Euler((radians(180), 0.0, 0.0), "XYZ")
+            cam_loc = (0.0000, -1.1414, -6.0376)
+            camera_data.ortho_scale = 5
+
+        my_camera.location = cam_loc
+        my_camera.rotation_euler = cam_rot
+        context.scene.camera = my_camera
+
+        bpy.ops.view3d.view_camera()
+
+        for area in bpy.context.screen.areas:
+            if area.type == "VIEW_3D":
+                area.spaces.active.region_3d.update()
+
+        bpy.ops.uv.project_from_view(
+            camera_bounds=True, correct_aspect=False, scale_to_bounds=False
+        )
+
+        bpy.ops.view3d.view_all()
+
+        return {"FINISHED"}
+
+
+class VIEW3D_PT_3dpkbd_uv_panel(bpy.types.Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    bl_category = "3DP UV"
+    bl_label = "UV Unwrapper"
+
+    def draw(self, context):
+        row = self.layout.row()
+        row.operator("3dp.unwrap", text="Side UV Projection").foo = "side"
+        row = self.layout.row()
+        row.operator("3dp.unwrap", text="Top UV Projection").foo = "top"
+        row = self.layout.row()
+        row.operator("3dp.unwrap", text="Bottom UV Projection").foo = "bottom"
+
+
+def register():
+    bpy.utils.register_class(TOOL_OT_3dp_unwrap)
+    bpy.utils.register_class(VIEW3D_PT_3dpkbd_uv_panel)
+
+
+def unregister():
+    bpy.utils.unregister_class(TOOL_OT_3dp_unwrap)
+    bpy.utils.unregister_class(VIEW3D_PT_3dpkbd_uv_panel)
+
+
+if __name__ == "__main__":
+    register()
