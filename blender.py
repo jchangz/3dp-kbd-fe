@@ -20,14 +20,15 @@ class TOOL_OT_3dp_rename(bpy.types.Operator):
 
 class TOOL_OT_3dp_initialize(bpy.types.Operator):
     bl_idname = "3dp.init"
-    bl_label = "unwrap uv"
-    bl_description = "project uv from view"
+    bl_label = "init"
+    bl_description = "transform, rotate and separate loose parts"
     bl_options = {"REGISTER", "UNDO"}
 
+    @classmethod
+    def poll(cls, context):
+        return context.active_object.mode == "OBJECT"
+
     def execute(self, context):
-        if context.active_object.mode != "OBJECT":
-            self.report({"ERROR"}, "Not in Object Mode")
-            return {"CANCELLED"}
 
         obj = context.active_object
 
@@ -58,6 +59,10 @@ class TOOL_OT_3dp_unwrap(bpy.types.Operator):
     bl_description = "project uv from view"
     bl_options = {"REGISTER", "UNDO"}
     foo: bpy.props.StringProperty(name="String Value")
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object.mode == "EDIT"
 
     def execute(self, context):
         camera_data = bpy.data.cameras.get("3DPCamera")
@@ -107,7 +112,7 @@ class TOOL_OT_3dp_unwrap(bpy.types.Operator):
             camera_bounds=True, correct_aspect=False, scale_to_bounds=False
         )
 
-        bpy.ops.view3d.view_all()
+        bpy.ops.view3d.view_camera()
 
         return {"FINISHED"}
 
@@ -139,16 +144,16 @@ class VIEW3D_PT_3dpkbd_uv_panel(bpy.types.Panel):
 
 
 def register():
-    bpy.utils.register_class(TOOL_OT_3dp_rename)
-    bpy.utils.register_class(TOOL_OT_3dp_unwrap)
     bpy.utils.register_class(TOOL_OT_3dp_initialize)
+    bpy.utils.register_class(TOOL_OT_3dp_unwrap)
+    bpy.utils.register_class(TOOL_OT_3dp_rename)
     bpy.utils.register_class(VIEW3D_PT_3dpkbd_uv_panel)
 
 
 def unregister():
-    bpy.utils.unregister_class(TOOL_OT_3dp_rename)
-    bpy.utils.unregister_class(TOOL_OT_3dp_unwrap)
     bpy.utils.unregister_class(TOOL_OT_3dp_initialize)
+    bpy.utils.unregister_class(TOOL_OT_3dp_unwrap)
+    bpy.utils.unregister_class(TOOL_OT_3dp_rename)
     bpy.utils.unregister_class(VIEW3D_PT_3dpkbd_uv_panel)
 
 
