@@ -3,6 +3,21 @@ import mathutils
 from math import radians
 
 
+class TOOL_OT_3dp_rename(bpy.types.Operator):
+    bl_idname = "3dp.rename"
+    bl_label = "rename"
+    bl_description = "set name of object data"
+    bl_options = {"REGISTER", "UNDO"}
+    foo: bpy.props.StringProperty(name="String Value")
+
+    def execute(self, context):
+        obj = context.active_object
+        obj.name = self.foo
+        obj.data.name = self.foo
+
+        return {"FINISHED"}
+
+
 class TOOL_OT_3dp_initialize(bpy.types.Operator):
     bl_idname = "3dp.init"
     bl_label = "unwrap uv"
@@ -114,15 +129,24 @@ class VIEW3D_PT_3dpkbd_uv_panel(bpy.types.Panel):
         row.operator("3dp.unwrap", text="Side").foo = "side"
         row.operator("3dp.unwrap", text="Top").foo = "top"
         row.operator("3dp.unwrap", text="Bottom").foo = "bottom"
+        box2 = self.layout.box()
+        box2.label(text="Rename")
+        col2 = box2.column(align=True)
+        row2 = col2.row()
+        row2.operator("3dp.rename", text="Top").foo = "top"
+        row2.operator("3dp.rename", text="Standard").foo = "standard"
+        row2.operator("3dp.rename", text="Vented").foo = "vented"
 
 
 def register():
+    bpy.utils.register_class(TOOL_OT_3dp_rename)
     bpy.utils.register_class(TOOL_OT_3dp_unwrap)
     bpy.utils.register_class(TOOL_OT_3dp_initialize)
     bpy.utils.register_class(VIEW3D_PT_3dpkbd_uv_panel)
 
 
 def unregister():
+    bpy.utils.unregister_class(TOOL_OT_3dp_rename)
     bpy.utils.unregister_class(TOOL_OT_3dp_unwrap)
     bpy.utils.unregister_class(TOOL_OT_3dp_initialize)
     bpy.utils.unregister_class(VIEW3D_PT_3dpkbd_uv_panel)
