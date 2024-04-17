@@ -1,4 +1,5 @@
 import bpy
+import bmesh
 import mathutils
 from math import radians
 
@@ -8,7 +9,7 @@ class TOOL_OT_3dp_rename(bpy.types.Operator):
     bl_label = "rename"
     bl_description = "set name of object data"
     bl_options = {"REGISTER", "UNDO"}
-    foo: bpy.props.StringProperty(name="String Value")
+    foo: bpy.props.StringProperty(name="Name")
 
     def execute(self, context):
         obj = context.active_object
@@ -53,12 +54,42 @@ class TOOL_OT_3dp_initialize(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class TOOL_OT_3dp_dissolve(bpy.types.Operator):
+    bl_idname = "3dp.ld"
+    bl_label = "limited dissolve"
+    bl_description = "limited dissolve mesh"
+    bl_options = {"REGISTER", "UNDO"}
+    foo: bpy.props.FloatProperty(name="Radius")
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object.mode == "OBJECT"
+
+    def execute(self, context):
+        meshes = set(o.data for o in context.selected_objects if o.type == "MESH")
+
+        bm = bmesh.new()
+
+        for m in meshes:
+            bm.from_mesh(m)
+            bmesh.ops.dissolve_limit(
+                bm, angle_limit=radians(self.foo), verts=bm.verts, edges=bm.edges
+            )
+            bm.to_mesh(m)
+            m.update()
+            bm.clear()
+
+        bm.free()
+
+        return {"FINISHED"}
+
+
 class TOOL_OT_3dp_unwrap(bpy.types.Operator):
     bl_idname = "3dp.unwrap"
     bl_label = "unwrap uv"
     bl_description = "project uv from view"
     bl_options = {"REGISTER", "UNDO"}
-    foo: bpy.props.StringProperty(name="String Value")
+    foo: bpy.props.StringProperty(name="Direction")
 
     @classmethod
     def poll(cls, context):
@@ -127,6 +158,14 @@ class VIEW3D_PT_3dpkbd_uv_panel(bpy.types.Panel):
     def draw(self, context):
         row = self.layout.row()
         row.operator("3dp.init", text="Initialize Model")
+        #
+        box = self.layout.box()
+        box.label(text="Limited Dissolve")
+        col = box.column(align=True)
+        row = col.row()
+        row.operator("3dp.ld", text="2°").foo = 2
+        row.operator("3dp.ld", text="5°").foo = 5
+        #
         box = self.layout.box()
         box.label(text="UV Project from View")
         col = box.column(align=True)
@@ -134,17 +173,19 @@ class VIEW3D_PT_3dpkbd_uv_panel(bpy.types.Panel):
         row.operator("3dp.unwrap", text="Side").foo = "side"
         row.operator("3dp.unwrap", text="Top").foo = "top"
         row.operator("3dp.unwrap", text="Bottom").foo = "bottom"
-        box2 = self.layout.box()
-        box2.label(text="Rename")
-        col2 = box2.column(align=True)
-        row2 = col2.row()
-        row2.operator("3dp.rename", text="Top").foo = "top"
-        row2.operator("3dp.rename", text="Standard").foo = "standard"
-        row2.operator("3dp.rename", text="Vented").foo = "vented"
+        #
+        box = self.layout.box()
+        box.label(text="Rename")
+        col = box.column(align=True)
+        row = col.row()
+        row.operator("3dp.rename", text="Top").foo = "top"
+        row.operator("3dp.rename", text="Standard").foo = "standard"
+        row.operator("3dp.rename", text="Vented").foo = "vented"
 
 
 def register():
     bpy.utils.register_class(TOOL_OT_3dp_initialize)
+    bpy.utils.register_class(TOOL_OT_3dp_dissolve)
     bpy.utils.register_class(TOOL_OT_3dp_unwrap)
     bpy.utils.register_class(TOOL_OT_3dp_rename)
     bpy.utils.register_class(VIEW3D_PT_3dpkbd_uv_panel)
@@ -152,6 +193,7 @@ def register():
 
 def unregister():
     bpy.utils.unregister_class(TOOL_OT_3dp_initialize)
+    bpy.utils.unregister_class(TOOL_OT_3dp_dissolve)
     bpy.utils.unregister_class(TOOL_OT_3dp_unwrap)
     bpy.utils.unregister_class(TOOL_OT_3dp_rename)
     bpy.utils.unregister_class(VIEW3D_PT_3dpkbd_uv_panel)
