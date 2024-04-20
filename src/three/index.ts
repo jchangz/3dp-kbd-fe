@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { debounce } from "lodash";
-import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
@@ -266,6 +266,8 @@ function init() {
 
         leftKeyboard.createKeys({ scene, keyMat, baseMat });
         rightKeyboard.createKeys({ scene, keyMat, baseMat });
+        leftKeyboard.createUSB({ scene, usbMat });
+        rightKeyboard.createUSB({ scene, usbMat });
       });
     }
 
@@ -326,7 +328,7 @@ function render() {
       var maxLength = Math.max(left.mx.length, right.mx.length);
 
       if (rightKeyboard.rightShiftData) right.mx[42] = rightKeyboard.rightShiftData;
-      console.log(rightKeyboard.rightShiftData);
+
       let i = 0;
       for (let x = 0; x < maxLength; x++) {
         if (x < left.mx.length) leftKeyboard.render = i;
