@@ -96,11 +96,9 @@ function init() {
 
   const onKeyboardChange = async (e: Event, side: KBSide) => {
     const { target } = e;
-    if (target instanceof HTMLInputElement) {
-      const {
-        value,
-        dataset: { type },
-      } = target;
+    if (target instanceof HTMLSelectElement) {
+      const { value, selectedIndex } = target;
+      const type = target[selectedIndex].dataset.type;
 
       let keyboardSide;
       if (side === "left") keyboardSide = leftKeyboard;
@@ -134,7 +132,7 @@ function init() {
   const rightShiftInput = document.getElementById("right-shift");
   rightShiftInput?.addEventListener("change", function (e) {
     const { target } = e;
-    if (target instanceof HTMLInputElement) {
+    if (target instanceof HTMLSelectElement) {
       rightKeyboard.rightShiftValue = target.value;
       rightKeyboard.updateInstancedMesh();
       changed = true;
@@ -144,7 +142,7 @@ function init() {
   const bottomCaseInput = document.getElementById("bottom-case");
   bottomCaseInput?.addEventListener("change", function (e) {
     const { target } = e;
-    if (target instanceof HTMLInputElement) {
+    if (target instanceof HTMLSelectElement) {
       leftKeyboard.bottomCase = target.value;
       rightKeyboard.bottomCase = target.value;
       changed = true;

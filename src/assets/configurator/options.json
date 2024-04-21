@@ -1,0 +1,34 @@
+{
+  "options": {
+    "left": {
+      "title": "Left",
+      "id": "left-options"
+    },
+    "right": {
+      "title": "Right",
+      "id": "right-options"
+    },
+    "shift": {
+      "title": "Shift",
+      "id": "right-shift"
+    },
+    "bottom": {
+      "title": "Bottom",
+      "id": "bottom-case",
+      "options": [
+        {
+          "title": "Standard",
+          "data-type": "bottom",
+          "value": "standard",
+          "default": false
+        },
+        {
+          "title": "Vented",
+          "data-type": "bottom",
+          "value": "vented",
+          "default": true
+        }
+      ]
+    }
+  }
+}

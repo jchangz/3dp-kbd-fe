@@ -85,8 +85,8 @@ export class Keeb {
     this.#selectedOptType = selectedOptType;
     this.#selectedOptValue = selectedOptValue;
 
-    const bottomTypeInput = document.querySelector("#bottom-case input:checked");
-    if (bottomTypeInput instanceof HTMLInputElement) {
+    const bottomTypeInput = document.querySelector("#bottom-case option:checked");
+    if (bottomTypeInput instanceof HTMLOptionElement) {
       const { value } = bottomTypeInput;
       if (value === "standard" || value === "vented") this.#selectedOptBottom = value;
     }
@@ -318,8 +318,8 @@ export class LeftKeeb extends Keeb {
     let selectedOptType: KBVariantType = "macro";
     let selectedOptValue: KBVariantOptions = "macro";
 
-    const leftOption = document.querySelector("#left-options input:checked");
-    if (leftOption instanceof HTMLInputElement) {
+    const leftOption = document.querySelector("#left-options option:checked");
+    if (leftOption instanceof HTMLOptionElement) {
       const {
         dataset: { type: caseType },
         value,
@@ -358,8 +358,8 @@ export class RightKeeb extends Keeb {
     let selectedOptType: KBVariantType = "macro";
     let selectedOptValue: KBVariantOptions = "macro";
 
-    const rightOption = document.querySelector("#right-options input:checked");
-    if (rightOption instanceof HTMLInputElement) {
+    const rightOption = document.querySelector("#right-options option:checked");
+    if (rightOption instanceof HTMLOptionElement) {
       const {
         dataset: { type: caseType },
         value,
@@ -371,8 +371,8 @@ export class RightKeeb extends Keeb {
 
     super({ selectedOptType, selectedOptValue });
 
-    const rightShift = document.querySelector("#right-shift input:checked");
-    if (rightShift && rightShift instanceof HTMLInputElement && isValidRightShift(rightShift.value)) {
+    const rightShift = document.querySelector("#right-shift option:checked");
+    if (rightShift && rightShift instanceof HTMLOptionElement && isValidRightShift(rightShift.value)) {
       this.#rightShiftValue = rightShift.value;
     }
 

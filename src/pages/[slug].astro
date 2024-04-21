@@ -3,20 +3,26 @@ import Layout from "../layouts/Layout.astro";
 import Three from "../components/Three.astro";
 import json from "../assets/routes.json";
 import { config } from "../assets/config.json";
+import { options } from "../assets/configurator/options.json";
 
 type ConfigOptionsObj = {
   title: string;
   "data-type": string;
   value: string;
   default: boolean;
-}
+};
 type ConfigObj = {
   [key: string]: {
     left: ConfigOptionsObj[];
     right: ConfigOptionsObj[];
     shift?: ConfigOptionsObj[];
   };
-}
+};
+type ConfigOptions = {
+  title: string;
+  id: string;
+  options: ConfigOptionsObj[];
+};
 
 interface Props {
   slug: string;
@@ -26,7 +32,7 @@ interface Props {
   leftOptions: ConfigOptionsObj[];
   rightOptions: ConfigOptionsObj[];
   shiftOptions: ConfigOptionsObj[];
-  bottomOptions: ConfigOptionsObj[];
+  optionsList: ConfigOptions[];
 }
 
 export async function getStaticPaths() {
@@ -40,95 +46,62 @@ export async function getStaticPaths() {
     };
   });
   return pages.map(({ slug, title, kbdType, caseType }) => {
-    const { left: leftOptions, right: rightOptions, shift: shiftOptions } = (config as ConfigObj)[kbdType];
-    let bottomOptions;
-    if (caseType === "1" || caseType === "3" || caseType === "g") {
-      bottomOptions = [
-        {
-          title: "Standard",
-          "data-type": "bottom",
-          value: "standard",
-        },
-        {
-          title: "Vented",
-          "data-type": "bottom",
-          value: "vented",
-          default: true,
-        },
-      ];
+    const {
+      left: leftOptions,
+      right: rightOptions,
+      shift: shiftOptions,
+    } = (config as ConfigObj)[kbdType];
+
+    const optionsList = [];
+
+    optionsList.push({ ...options.left, options: leftOptions });
+    optionsList.push({ ...options.right, options: rightOptions });
+
+    if (kbdType === "kbo") {
+      optionsList.push({ ...options.shift, options: shiftOptions });
     }
+
+    if (caseType === "1" || caseType === "3" || caseType === "g") {
+      optionsList.push(options.bottom);
+    }
+
     return {
       params: { slug },
-      props: { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions, bottomOptions },
+      props: {
+        title,
+        kbdType,
+        caseType,
+        optionsList,
+      },
     };
   });
 }
-const { title, kbdType, caseType, leftOptions, rightOptions, shiftOptions, bottomOptions } = Astro.props;
+const { title, kbdType, caseType, optionsList } = Astro.props;
 ---
 
 <Layout title={title}>
   <Three type={caseType} keyboard={kbdType} />
-  <div class="absolute top-8">
-    <p class="">{title}</p>
-    <form id="left-options">
-      <fieldset>
-        <legend>Left Options:</legend>
-        {
-          leftOptions.map((opt) => (
-            <div>
-              <input type="radio" id={`left-${opt.value}`} data-type={opt["data-type"]} name="left" value={opt.value} checked={opt.default} />
-              <label for={`left-${opt.value}`}>{opt.title}</label>
-            </div>
-          ))
-        }
-      </fieldset>
-    </form>
-    <form id="right-options">
-      <fieldset>
-        <legend>Right Options:</legend>
-        {
-          rightOptions.map((opt) => (
-            <div>
-              <input type="radio" id={`right-${opt.value}`} data-type={opt["data-type"]} name="right" value={opt.value} checked={opt.default} />
-              <label for={`right-${opt.value}`}>{opt.title}</label>
-            </div>
-          ))
-        }
-      </fieldset>
-    </form>
-    <>
-      {
-        kbdType === "kbo" && (
-          <form id="right-shift">
-            <fieldset>
-              <legend>Right Shift:</legend>
-              {shiftOptions.map((opt) => (
-                <div>
-                  <input type="radio" id={opt.value} data-type={opt["data-type"]} name="right" value={opt.value} checked={opt.default} />
-                  <label for={opt.value}>{opt.title}</label>
-                </div>
-              ))}
-            </fieldset>
-          </form>
-        )
-      }
-    </>
-    <>
-      {
-        bottomOptions && (
-          <form id="bottom-case">
-            <fieldset>
-              <legend>Bottom:</legend>
-              {bottomOptions.map((opt) => (
-                <div>
-                  <input type="radio" id={opt.value} data-type={opt["data-type"]} name="bottom" value={opt.value} checked={opt.default} />
-                  <label for={opt.value}>{opt.title}</label>
-                </div>
-              ))}
-            </fieldset>
-          </form>
-        )
-      }
-    </>
+  <div class="absolute bottom-8 w-full space-x-4 text-center">
+    {
+      optionsList.map((type) => (
+        <div class="relative inline-block w-48 text-2xl">
+          <select
+            id={type.id}
+            class="focus:shadow-outline block w-full appearance-none rounded-[6px] border border-gray-400 bg-black px-4 py-4 text-center leading-tight shadow hover:border-gray-500 focus:outline-none"
+          >
+            {type.options.map((opt) => (
+              <option
+                data-type={opt["data-type"]}
+                value={opt.value}
+                selected={opt.default && "selected"}
+              >
+                {opt.title}
+              </option>
+            ))}
+          </select>
+          <label for={type.id}> {type.title}</label>
+        </div>
+      ))
+    }
   </div>
 </Layout>
