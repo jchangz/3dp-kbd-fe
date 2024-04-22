@@ -5,7 +5,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { GainMapLoader } from "@monogrid/gainmap-js";
-import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { MathUtils } from "three";
 import { LeftKeeb, RightKeeb, Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
 import { keyLight, fillLight, shadowPlane } from "./lights";
@@ -74,24 +73,6 @@ function init() {
   });
   caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
-  // GUI
-
-  const gui = new GUI({ autoPlace: false }),
-    params = {
-      case: caseMat.color.getHex(),
-      keycap: keyMat.color.getHex(),
-    };
-  gui.domElement.id = "gui";
-  gui.addColor(params, "case").onChange(function (val) {
-    caseMat.color.setHex(val);
-    changed = true;
-  });
-  gui.addColor(params, "keycap").onChange(function (val) {
-    keyMat.color.setHex(val);
-    changed = true;
-  });
-  gui.open();
-
   // Change Keyboard Options
 
   const onKeyboardChange = async (e: Event, side: KBSide) => {
@@ -126,6 +107,13 @@ function init() {
   const leftSideInput = document.getElementById("left-options");
   leftSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "left"));
 
+  const guiInput = document.getElementsByClassName("three-gui");
+  if (leftSideInput && guiInput.length) {
+    for (let item of guiInput) {
+      if (item instanceof HTMLElement) item.style.height = leftSideInput.offsetHeight + "px";
+    }
+  }
+
   const rightSideInput = document.getElementById("right-options");
   rightSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "right"));
 
@@ -145,6 +133,26 @@ function init() {
     if (target instanceof HTMLSelectElement) {
       leftKeyboard.bottomCase = target.value;
       rightKeyboard.bottomCase = target.value;
+      changed = true;
+    }
+  });
+
+  const inputCaseColor = document.getElementById("case-color");
+  inputCaseColor?.addEventListener("input", function (e) {
+    const { target } = e;
+    if (target instanceof HTMLInputElement) {
+      const color = new THREE.Color(target.value);
+      caseMat.color.setHex(color.getHex());
+      changed = true;
+    }
+  });
+
+  const inputKeycapColor = document.getElementById("keycap-color");
+  inputKeycapColor?.addEventListener("input", function (e) {
+    const { target } = e;
+    if (target instanceof HTMLInputElement) {
+      const color = new THREE.Color(target.value);
+      keyMat.color.setHex(color.getHex());
       changed = true;
     }
   });
@@ -180,7 +188,6 @@ function init() {
     controls.minDistance = 50;
     controls.maxDistance = 200;
     controls.addEventListener("change", () => (changed = true));
-    canvas.appendChild(gui.domElement);
 
     // On Initial Load
 

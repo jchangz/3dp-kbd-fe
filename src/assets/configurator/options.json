@@ -1,5 +1,13 @@
 {
   "options": {
+    "case-color": {
+      "title": "Case",
+      "id": "case-color"
+    },
+    "keycap-color": {
+      "title": "Keycap",
+      "id": "keycap-color"
+    },
     "left": {
       "title": "Left",
       "id": "left-options"

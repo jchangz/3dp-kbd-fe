@@ -29,10 +29,8 @@ interface Props {
   title: string;
   kbdType: string;
   caseType: string;
-  leftOptions: ConfigOptionsObj[];
-  rightOptions: ConfigOptionsObj[];
-  shiftOptions: ConfigOptionsObj[];
   optionsList: ConfigOptions[];
+  colorOptions: ConfigOptions[];
 }
 
 export async function getStaticPaths() {
@@ -65,6 +63,8 @@ export async function getStaticPaths() {
       optionsList.push(options.bottom);
     }
 
+    const colorOptions = [options["case-color"], options["keycap-color"]];
+
     return {
       params: { slug },
       props: {
@@ -72,25 +72,48 @@ export async function getStaticPaths() {
         kbdType,
         caseType,
         optionsList,
+        colorOptions,
       },
     };
   });
 }
-const { title, kbdType, caseType, optionsList } = Astro.props;
+const { title, kbdType, caseType, optionsList, colorOptions } = Astro.props;
 ---
 
 <Layout title={title}>
   <Three type={caseType} keyboard={kbdType} />
-  <div class="absolute bottom-8 w-full space-x-4 text-center">
+  <div
+    class="absolute bottom-24 flex w-full items-center justify-center space-x-4 text-center font-mono text-xl uppercase"
+  >
+    {
+      colorOptions.map((option) => (
+        <div class="relative inline-block w-24">
+          <label class="text-base text-gray-300" for={option.id}>
+            {option.title}
+          </label>
+          <input
+            class="three-gui focus:shadow-outline block w-full appearance-none rounded-[6px] border border-gray-400 bg-black/[.5] p-2 text-center leading-tight shadow hover:border-gray-500 focus:outline-none"
+            type="color"
+            id={option.id}
+            name={option.title}
+            value="#171718"
+          />
+        </div>
+      ))
+    }
     {
       optionsList.map((type) => (
-        <div class="relative inline-block w-48 text-2xl">
+        <div class="relative inline-block w-48">
+          <label class="text-base text-gray-300" for={type.id}>
+            {type.title}
+          </label>
           <select
             id={type.id}
-            class="focus:shadow-outline block w-full appearance-none rounded-[6px] border border-gray-400 bg-black px-4 py-4 text-center leading-tight shadow hover:border-gray-500 focus:outline-none"
+            class="focus:shadow-outline block w-full appearance-none rounded-[6px] border border-gray-400 bg-black/[.5] p-4 text-center uppercase leading-tight shadow hover:border-gray-500 focus:outline-none"
           >
             {type.options.map((opt) => (
               <option
+                class="bg-black"
                 data-type={opt["data-type"]}
                 value={opt.value}
                 selected={opt.default && "selected"}
@@ -99,7 +122,6 @@ const { title, kbdType, caseType, optionsList } = Astro.props;
               </option>
             ))}
           </select>
-          <label for={type.id}> {type.title}</label>
         </div>
       ))
     }
