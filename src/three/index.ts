@@ -7,7 +7,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { GainMapLoader } from "@monogrid/gainmap-js";
 import { MathUtils } from "three";
 import { LeftKeeb, RightKeeb, Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
-import { keyLight, fillLight, shadowPlane } from "./lights";
+import { keyLight, spotLight, fillLight, shadowPlane } from "./lights";
 
 type KBSide = "left" | "right";
 
@@ -19,6 +19,8 @@ const centerVector = new THREE.Vector3(),
 
 let leftKeyboard: LeftKeeb, rightKeyboard: RightKeeb;
 let changed = false;
+
+const fov = 50;
 
 init();
 animate();
@@ -92,7 +94,7 @@ function init() {
           keyboardSide.selectedOptValue = value;
           keyboardSide.caseLoader({ gltf, caseMat, faceMat, baseMat });
           keyboardSide.createKeys({ scene, keyMat, baseMat });
-          setCameraCenter();
+          setKeyboardToCenter();
         } else {
           keyboardSide.selectedOptValue = value;
           keyboardSide.createKeys({ scene, keyMat, baseMat });
@@ -166,7 +168,6 @@ function init() {
     renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.setClearColor(0x1f1f1f);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
     canvas.appendChild(renderer.domElement);
@@ -176,8 +177,8 @@ function init() {
 
     // Camera
 
-    camera = new THREE.PerspectiveCamera(1, canvas.offsetWidth / canvas.offsetHeight, 1, 1000);
-    camera.position.set(110, 90, -70);
+    camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.set(13, 4.5, 0);
     setCameraFOV();
 
     // Controls
@@ -185,8 +186,8 @@ function init() {
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     // controls.autoRotate = true;
-    controls.minDistance = 50;
-    controls.maxDistance = 200;
+    controls.minDistance = 5;
+    controls.maxDistance = 20;
     controls.addEventListener("change", () => (changed = true));
 
     // On Initial Load
@@ -199,7 +200,7 @@ function init() {
         if (e.target instanceof HTMLElement) e.target.remove();
       });
       pmremGenerator.dispose();
-      setCameraCenter();
+      setKeyboardToCenter();
       changed = true;
     };
 
@@ -247,8 +248,11 @@ function init() {
 
     // Lighting
 
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = new THREE.Fog(0x000000, 10, 50);
+
     scene.add(keyLight);
-    scene.add(fillLight);
+    scene.add(spotLight);
     scene.add(shadowPlane);
 
     // Create Keyboard
@@ -283,23 +287,21 @@ function init() {
   }
 }
 
-function setCameraCenter() {
+function setKeyboardToCenter() {
   centerBox.setFromObject(mainGroup);
   centerBox.getCenter(centerVector);
-  camera.lookAt(centerVector);
-  camera.updateProjectionMatrix();
-  controls.target.set(centerVector.x, centerVector.y, centerVector.z);
+  mainGroup.position.z -= centerVector.z;
   changed = true;
 }
 
 function setCameraFOV() {
   // https://discourse.threejs.org/t/keeping-an-object-scaled-based-on-the-bounds-of-the-canvas-really-battling-to-explain-this-one/17574/10
-  const fov = 1;
-  const aspectRatio = 2;
+  const aspectRatio = 0.5;
   const cameraHeight = Math.tan(MathUtils.degToRad(fov / 2));
   const ratio = camera.aspect / aspectRatio;
   const newCameraHeight = cameraHeight / ratio;
   camera.fov = MathUtils.radToDeg(Math.atan(newCameraHeight)) * 2;
+  camera.updateProjectionMatrix();
 }
 
 function onWindowResize() {
