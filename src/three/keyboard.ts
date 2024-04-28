@@ -148,21 +148,6 @@ export class Keeb {
     }
   }
 
-  set render(i: number) {
-    if (this.#switchInstancedMesh && this.selectedSwitchGeometry) {
-      const { mx, rows } = this.selectedSwitchGeometry;
-      this.#switch3DMap.position.set(mx[i].x, mx[i].y, mx[i].z);
-      this.#switch3DMap.updateMatrix();
-
-      this.#keysGroup.children.forEach((mesh) => {
-        if (mesh instanceof THREE.InstancedMesh && rows[mesh.name].matrix[i]) {
-          mesh.setMatrixAt(rows[mesh.name].matrix[i] - 1, this.#switch3DMap.matrix);
-        }
-      });
-      this.#switchInstancedMesh.setMatrixAt(i, this.#switch3DMap.matrix);
-    }
-  }
-
   updateInstancedMesh() {
     if (this.#switchInstancedMesh) this.#switchInstancedMesh.instanceMatrix.needsUpdate = true;
   }
@@ -298,6 +283,20 @@ export class Keeb {
         this.#switchInstancedMesh = new THREE.InstancedMesh(_switchMesh.geometry.clone(), baseMat, mx.length);
         this.#switchInstancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         this.#switchInstancedMesh.name = name;
+
+        for (let i = 0; i < switchData.mx.length; i++) {
+          const { mx, rows } = this.selectedSwitchGeometry;
+          this.#switch3DMap.position.set(mx[i].x, mx[i].y, mx[i].z);
+          this.#switch3DMap.updateMatrix();
+
+          this.#keysGroup.children.forEach((mesh) => {
+            if (mesh instanceof THREE.InstancedMesh && rows[mesh.name].matrix[i]) {
+              mesh.setMatrixAt(rows[mesh.name].matrix[i] - 1, this.#switch3DMap.matrix);
+            }
+          });
+          this.#switchInstancedMesh.setMatrixAt(i, this.#switch3DMap.matrix);
+        }
+
         this.#keebGroup.add(this.#switchInstancedMesh);
       }
     }

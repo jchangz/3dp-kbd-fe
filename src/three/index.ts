@@ -339,16 +339,7 @@ function render() {
     const right = rightKeyboard.selectedSwitchGeometry;
 
     if (left && right) {
-      var maxLength = Math.max(left.mx.length, right.mx.length);
-
       if (rightKeyboard.rightShiftData) right.mx[42] = rightKeyboard.rightShiftData;
-
-      let i = 0;
-      for (let x = 0; x < maxLength; x++) {
-        if (x < left.mx.length) leftKeyboard.render = i;
-        if (x < right.mx.length) rightKeyboard.render = i;
-        i++;
-      }
     }
   }
 
