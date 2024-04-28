@@ -304,9 +304,7 @@ export class Keeb {
 }
 
 export class LeftKeeb extends Keeb {
-  #fileBaseName;
-
-  constructor({ keyboard, type }: { keyboard: KBNameOptions; type: KBTypeOptions }) {
+  constructor({ keyboard }: { keyboard: KBNameOptions }) {
     let selectedOptType: KBVariantType = "macro";
     let selectedOptValue: KBVariantOptions = "macro";
 
@@ -323,28 +321,17 @@ export class LeftKeeb extends Keeb {
 
     super({ selectedOptType, selectedOptValue });
 
-    this.#fileBaseName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-left`;
-
     this.plateGeometry = geometry[keyboard].left;
 
     if (keyboard === "kbo") this.setKBOGeometry(three.kbo.left.base, options.blocker.left);
     else this.switchGeometry = three[keyboard].left;
   }
-
-  getFileName(value?: string) {
-    let string = this.#fileBaseName;
-    const leftSideValue = value || this.selectedOptValue;
-    if (leftSideValue === "macro") string += "-macro";
-
-    return (string += ".glb");
-  }
 }
 
 export class RightKeeb extends Keeb {
-  #fileBaseName;
   #rightShiftValue: KBORightShiftOption | false = false;
 
-  constructor({ keyboard, type }: { keyboard: KBNameOptions; type: KBTypeOptions }) {
+  constructor({ keyboard }: { keyboard: KBNameOptions }) {
     let selectedOptType: KBVariantType = "macro";
     let selectedOptValue: KBVariantOptions = "macro";
 
@@ -365,8 +352,6 @@ export class RightKeeb extends Keeb {
     if (rightShift && rightShift instanceof HTMLOptionElement && isValidRightShift(rightShift.value)) {
       this.#rightShiftValue = rightShift.value;
     }
-
-    this.#fileBaseName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-right`;
 
     this.plateGeometry = geometry[keyboard].right;
 
@@ -390,17 +375,5 @@ export class RightKeeb extends Keeb {
 
   set rightShiftValue(value: string) {
     if (isValidRightShift(value)) this.#rightShiftValue = value;
-  }
-
-  getFileName(value?: string) {
-    let string = this.#fileBaseName;
-    const caseOpt = value || this.selectedOptValue;
-
-    if (this.selectedOptType === "macro") {
-      if (caseOpt === "60") string += "-60";
-      else string += "-65";
-    }
-
-    return (string += ".glb");
   }
 }

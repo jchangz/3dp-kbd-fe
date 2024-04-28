@@ -8,7 +8,7 @@ import { GainMapLoader } from "@monogrid/gainmap-js";
 import { MathUtils } from "three";
 import { LeftKeeb, RightKeeb, Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
 import { keyLight, spotLight, fillLight, shadowPlane } from "./lights";
-import { getUSBData } from "./utils";
+import { getKeyboardData, getUSBData } from "./utils";
 
 type KBSide = "left" | "right";
 
@@ -18,6 +18,7 @@ const mainGroup = new THREE.Group();
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
+let keyboardData;
 let leftKeyboard: LeftKeeb, rightKeyboard: RightKeeb;
 let changed = false;
 
@@ -84,13 +85,19 @@ function init() {
       const { value, selectedIndex } = target;
       const type = target[selectedIndex].dataset.type;
 
-      let keyboardSide;
-      if (side === "left") keyboardSide = leftKeyboard;
-      if (side === "right") keyboardSide = rightKeyboard;
+      let keyboardSide, keyboardInfo;
+      if (side === "left") {
+        keyboardSide = leftKeyboard;
+        keyboardInfo = keyboardData.leftSide();
+      }
+      if (side === "right") {
+        keyboardSide = rightKeyboard;
+        keyboardInfo = keyboardData.rightSide();
+      }
 
       if (keyboardSide instanceof Keeb && isValidKeyboardVariant(value)) {
         if (type === "macro") {
-          const fileName = keyboardSide.getFileName(value);
+          const fileName = keyboardInfo.fileName;
           const gltf = await reloader.loadAsync(fileName);
           keyboardSide.selectedOptValue = value;
           keyboardSide.caseLoader({ gltf, caseMat, faceMat, baseMat });
@@ -263,14 +270,18 @@ function init() {
     } = canvas;
 
     if (keyboard && isValidKeyboardName(keyboard) && type && isValidKeyboardType(type)) {
+      keyboardData = getKeyboardData({ keyboard, type });
+      const leftKeyboardData = keyboardData.leftSide();
+      const rightKeyboardData = keyboardData.rightSide();
+
       const usbGeometry = getUSBData({ keyboard });
 
       leftKeyboard = new LeftKeeb({ keyboard, type });
       rightKeyboard = new RightKeeb({ keyboard, type });
       mainGroup.add(leftKeyboard.keyboard, rightKeyboard.keyboard);
 
-      loader.load(leftKeyboard.getFileName(), (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
-      loader.load(rightKeyboard.getFileName(), (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
+      loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
+      loader.load(rightKeyboardData.fileName, (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
 
       loader.load("models/switch.glb", function (gltf) {
         gltf.scene.visible = false;
