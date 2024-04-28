@@ -3,7 +3,6 @@ import { MathUtils } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
 import { three, options } from "../assets/three.json";
 import { geometry } from "../assets/geometry.json";
-import { usb } from "../assets/geometry/usb.json";
 
 type KBSwitchPosition = {
   mx: { x: number; y: number; z: number }[];
@@ -74,12 +73,8 @@ export class Keeb {
   #switchInstancedMesh?: THREE.InstancedMesh;
   #switch3DMap = new THREE.Object3D();
 
-  #usbInstancedMesh?: THREE.InstancedMesh;
-  #usb3DMap = new THREE.Object3D();
-
   #plateGeometry: KBPlateGeometry = {};
   #switchGeometry: KBVariantSwitchGeometry = {};
-  #usbGeometry: KBUSBGeometry = [];
 
   constructor({ selectedOptType, selectedOptValue }: { selectedOptType: KBVariantType; selectedOptValue: KBVariantOptions }) {
     this.#selectedOptType = selectedOptType;
@@ -120,10 +115,6 @@ export class Keeb {
     this.#switchGeometry = data;
   }
 
-  set usbGeometry(data: KBUSBGeometry) {
-    this.#usbGeometry = data;
-  }
-
   set selectedOptValue(value: KBVariantOptions) {
     this.#selectedOptValue = value;
   }
@@ -158,16 +149,10 @@ export class Keeb {
   }
 
   set render(i: number) {
-    if (this.#switchInstancedMesh && this.selectedSwitchGeometry && this.#usbInstancedMesh) {
+    if (this.#switchInstancedMesh && this.selectedSwitchGeometry) {
       const { mx, rows } = this.selectedSwitchGeometry;
       this.#switch3DMap.position.set(mx[i].x, mx[i].y, mx[i].z);
       this.#switch3DMap.updateMatrix();
-
-      if (i < 2) {
-        this.#usb3DMap.position.set(this.#usbGeometry[i].x, this.#usbGeometry[i].y, this.#usbGeometry[i].z);
-        this.#usb3DMap.updateMatrix();
-        this.#usbInstancedMesh.setMatrixAt(i, this.#usb3DMap.matrix);
-      }
 
       this.#keysGroup.children.forEach((mesh) => {
         if (mesh instanceof THREE.InstancedMesh && rows[mesh.name].matrix[i]) {
@@ -254,13 +239,21 @@ export class Keeb {
     }
   }
 
-  createUSB({ scene, usbMat }: { scene: THREE.Scene; usbMat: THREE.MeshStandardMaterial }) {
-    const _usbMesh = scene.getObjectByName("usb");
+  createUSB(_usbMesh: THREE.Object3D, usbMat: THREE.MeshStandardMaterial, usbGeometry: KBUSBGeometry) {
+    const meshLength = 2;
+    const usb3DMap = new THREE.Object3D();
 
     if (_usbMesh instanceof THREE.Mesh) {
-      this.#usbInstancedMesh = new THREE.InstancedMesh(_usbMesh.geometry.clone(), usbMat, 2);
-      this.#usbInstancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      this.#keebGroup.add(this.#usbInstancedMesh);
+      const usbInstancedMesh = new THREE.InstancedMesh(_usbMesh.geometry.clone(), usbMat, meshLength);
+      usbInstancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+      for (let i = 0; i < meshLength; i++) {
+        usb3DMap.position.set(usbGeometry[i].x, usbGeometry[i].y, usbGeometry[i].z);
+        usb3DMap.updateMatrix();
+        usbInstancedMesh.setMatrixAt(i, usb3DMap.matrix);
+      }
+
+      this.#keebGroup.add(usbInstancedMesh);
     }
   }
 
@@ -335,8 +328,6 @@ export class LeftKeeb extends Keeb {
 
     this.plateGeometry = geometry[keyboard].left;
 
-    this.usbGeometry = usb[keyboard].left;
-
     if (keyboard === "kbo") this.setKBOGeometry(three.kbo.left.base, options.blocker.left);
     else this.switchGeometry = three[keyboard].left;
   }
@@ -379,8 +370,6 @@ export class RightKeeb extends Keeb {
     this.#fileBaseName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-right`;
 
     this.plateGeometry = geometry[keyboard].right;
-
-    this.usbGeometry = usb[keyboard].right;
 
     if (keyboard === "kbo") {
       const {
