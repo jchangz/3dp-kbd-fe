@@ -66,7 +66,7 @@ export class Keeb extends THREE.Group {
   #keysGroup = new THREE.Group();
 
   #selectedOptType: KBVariantType;
-  #selectedOptValue: KBVariantOptions;
+  selectedOptValue: KBVariantOptions;
   #selectedOptBottom: KBBottomOption = "standard";
 
   #switchInstancedMesh?: THREE.InstancedMesh;
@@ -79,29 +79,16 @@ export class Keeb extends THREE.Group {
     super();
 
     this.#selectedOptType = selectedOptType;
-    this.#selectedOptValue = selectedOptValue;
-
-    const bottomTypeInput = document.querySelector("#bottom-case option:checked");
-    if (bottomTypeInput instanceof HTMLOptionElement) {
-      const { value } = bottomTypeInput;
-      if (value === "standard" || value === "vented") this.#selectedOptBottom = value;
-    }
+    this.selectedOptValue = selectedOptValue;
 
     this.#keebGroup.add(this.#caseGroup, this.#keysGroup);
-    this.#keebGroup.rotation.y = Math.PI / 2;
     this.add(this.#keebGroup);
+
+    this.changeBottomCase();
   }
 
   get selectedSwitchGeometry() {
-    return this.#switchGeometry[this.#selectedOptValue];
-  }
-
-  get selectedOptType() {
-    return this.#selectedOptType;
-  }
-
-  get selectedOptValue() {
-    return this.#selectedOptValue;
+    return this.#switchGeometry[this.selectedOptValue];
   }
 
   set plateGeometry(data: KBPlateGeometry) {
@@ -110,10 +97,6 @@ export class Keeb extends THREE.Group {
 
   set switchGeometry(data: KBVariantSwitchGeometry) {
     this.#switchGeometry = data;
-  }
-
-  set selectedOptValue(value: KBVariantOptions) {
-    this.#selectedOptValue = value;
   }
 
   setKBOGeometry(data: KBSwitchPosition, options: KBOData) {
@@ -153,25 +136,22 @@ export class Keeb extends THREE.Group {
   }
 
   caseLoader({ gltf, caseMat, faceMat, baseMat }: { gltf: GLTF; caseMat: THREE.MeshStandardMaterial; faceMat: THREE.MeshStandardMaterial; baseMat: THREE.MeshStandardMaterial }) {
-    const filesToAdd: THREE.Group[] = [];
-
     gltf.scene.traverse((child) => {
+      child.castShadow = true;
       if (child instanceof THREE.Mesh && child.isMesh) {
-        child.castShadow = true;
         if (child.name.includes("_2")) child.material = faceMat;
         else child.material = caseMat;
       }
       if (child instanceof THREE.Group && child.name !== "Scene") {
         child.visible = false;
         if (child.name === "top" || child.name === this.#selectedOptBottom) child.visible = true;
-        filesToAdd.push(child);
       }
     });
 
     this.#createPlates({ baseMat });
 
     this.#caseGroup.clear();
-    for (let i = 0; i < filesToAdd.length; i++) this.#caseGroup.add(filesToAdd[i]);
+    this.#caseGroup.add(gltf.scene);
   }
 
   #createPlates({ baseMat }: { baseMat: THREE.MeshStandardMaterial }) {
@@ -183,7 +163,7 @@ export class Keeb extends THREE.Group {
     } else {
       // Quefrency right has macro and blocker options
       // We call 60 as no-macro and 65 as macro
-      switch (this.#selectedOptValue) {
+      switch (this.selectedOptValue) {
         case "no-macro":
         case "60":
           selectedPlateOption = "no-macro";

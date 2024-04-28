@@ -15,6 +15,8 @@ type KBSide = "left" | "right";
 let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
 const scene = new THREE.Scene();
 const mainGroup = new THREE.Group();
+mainGroup.rotation.y = Math.PI / 2;
+
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
