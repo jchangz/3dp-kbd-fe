@@ -304,21 +304,7 @@ export class Keeb {
 }
 
 export class LeftKeeb extends Keeb {
-  constructor({ keyboard }: { keyboard: KBNameOptions }) {
-    let selectedOptType: KBVariantType = "macro";
-    let selectedOptValue: KBVariantOptions = "macro";
-
-    const leftOption = document.querySelector("#left-options option:checked");
-    if (leftOption instanceof HTMLOptionElement) {
-      const {
-        dataset: { type: caseType },
-        value,
-      } = leftOption;
-
-      if (caseType === "blocker") selectedOptType = "blocker";
-      if (isValidKeyboardVariant(value)) selectedOptValue = value;
-    }
-
+  constructor(keyboard: KBNameOptions, selectedOptType: KBVariantType, selectedOptValue: KBVariantOptions) {
     super({ selectedOptType, selectedOptValue });
 
     this.plateGeometry = geometry[keyboard].left;
@@ -331,21 +317,7 @@ export class LeftKeeb extends Keeb {
 export class RightKeeb extends Keeb {
   #rightShiftValue: KBORightShiftOption | false = false;
 
-  constructor({ keyboard }: { keyboard: KBNameOptions }) {
-    let selectedOptType: KBVariantType = "macro";
-    let selectedOptValue: KBVariantOptions = "macro";
-
-    const rightOption = document.querySelector("#right-options option:checked");
-    if (rightOption instanceof HTMLOptionElement) {
-      const {
-        dataset: { type: caseType },
-        value,
-      } = rightOption;
-
-      if (caseType === "blocker") selectedOptType = "blocker";
-      if (isValidKeyboardVariant(value)) selectedOptValue = value;
-    }
-
+  constructor(keyboard: KBNameOptions, selectedOptType: KBVariantType, selectedOptValue: KBVariantOptions) {
     super({ selectedOptType, selectedOptValue });
 
     const rightShift = document.querySelector("#right-shift option:checked");

@@ -79,35 +79,29 @@ function init() {
 
   // Change Keyboard Options
 
-  const onKeyboardChange = async (e: Event, side: KBSide) => {
-    const { target } = e;
-    if (target instanceof HTMLSelectElement) {
-      const { value, selectedIndex } = target;
-      const type = target[selectedIndex].dataset.type;
+  const onKeyboardChange = async (side: KBSide) => {
+    let keyboardSide, keyboardInfo;
+    if (side === "left") {
+      keyboardSide = leftKeyboard;
+      keyboardInfo = keyboardData.leftSide();
+    }
+    if (side === "right") {
+      keyboardSide = rightKeyboard;
+      keyboardInfo = keyboardData.rightSide();
+    }
 
-      let keyboardSide, keyboardInfo;
-      if (side === "left") {
-        keyboardSide = leftKeyboard;
-        keyboardInfo = keyboardData.leftSide();
-      }
-      if (side === "right") {
-        keyboardSide = rightKeyboard;
-        keyboardInfo = keyboardData.rightSide();
-      }
-
-      if (keyboardSide instanceof Keeb && isValidKeyboardVariant(value)) {
-        if (type === "macro") {
-          const fileName = keyboardInfo.fileName;
-          const gltf = await reloader.loadAsync(fileName);
-          keyboardSide.selectedOptValue = value;
-          keyboardSide.caseLoader({ gltf, caseMat, faceMat, baseMat });
-          keyboardSide.createKeys({ scene, keyMat, baseMat });
-          setKeyboardToCenter();
-        } else {
-          keyboardSide.selectedOptValue = value;
-          keyboardSide.createKeys({ scene, keyMat, baseMat });
-          changed = true;
-        }
+    if (keyboardSide instanceof Keeb) {
+      if (keyboardInfo.selectedOptType === "macro") {
+        const fileName = keyboardInfo.fileName;
+        const gltf = await reloader.loadAsync(fileName);
+        keyboardSide.selectedOptValue = keyboardInfo.selectedOptValue;
+        keyboardSide.caseLoader({ gltf, caseMat, faceMat, baseMat });
+        keyboardSide.createKeys({ scene, keyMat, baseMat });
+        setKeyboardToCenter();
+      } else {
+        keyboardSide.selectedOptValue = keyboardInfo.selectedOptValue;
+        keyboardSide.createKeys({ scene, keyMat, baseMat });
+        changed = true;
       }
     }
   };
@@ -115,7 +109,7 @@ function init() {
   // Event Listeners
 
   const leftSideInput = document.getElementById("left-options");
-  leftSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "left"));
+  leftSideInput?.addEventListener("change", () => onKeyboardChange("left"));
 
   const guiInput = document.getElementsByClassName("three-gui");
   if (leftSideInput && guiInput.length) {
@@ -125,7 +119,7 @@ function init() {
   }
 
   const rightSideInput = document.getElementById("right-options");
-  rightSideInput?.addEventListener("change", (e) => onKeyboardChange(e, "right"));
+  rightSideInput?.addEventListener("change", () => onKeyboardChange("right"));
 
   const rightShiftInput = document.getElementById("right-shift");
   rightShiftInput?.addEventListener("change", function (e) {
@@ -276,8 +270,8 @@ function init() {
 
       const usbGeometry = getUSBData({ keyboard });
 
-      leftKeyboard = new LeftKeeb({ keyboard, type });
-      rightKeyboard = new RightKeeb({ keyboard, type });
+      leftKeyboard = new LeftKeeb(keyboard, leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue);
+      rightKeyboard = new RightKeeb(keyboard, rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue);
       mainGroup.add(leftKeyboard.keyboard, rightKeyboard.keyboard);
 
       loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));

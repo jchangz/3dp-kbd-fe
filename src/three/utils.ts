@@ -14,6 +14,7 @@ export function getUSBData({ keyboard }: { keyboard: KBNameOptions }) {
   };
 }
 
+type KBVariantType = "macro" | "blocker";
 const KBVARIANTOPTIONS = ["macro", "no-macro", "60", "65", "65-b", "blocker", "blocker-1", "blocker-2", "no-blocker", "base"] as const;
 type KBVariantOptions = (typeof KBVARIANTOPTIONS)[number];
 export function isValidKeyboardVariant(option: string): option is KBVariantOptions {
@@ -22,8 +23,8 @@ export function isValidKeyboardVariant(option: string): option is KBVariantOptio
 
 export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; type: string }) {
   const leftSide = () => {
-    let selectedOptType = "macro";
-    let selectedOptValue = "macro";
+    let selectedOptType: KBVariantType = "macro";
+    let selectedOptValue: KBVariantOptions = "macro";
     let fileName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-left`;
 
     const leftOption = document.querySelector("#left-options option:checked");
@@ -48,8 +49,8 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
   };
 
   const rightSide = () => {
-    let selectedOptType = "macro";
-    let selectedOptValue = "macro";
+    let selectedOptType: KBVariantType = "macro";
+    let selectedOptValue: KBVariantOptions = "macro";
     let fileName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-right`;
 
     const rightOption = document.querySelector("#right-options option:checked");
