@@ -132,13 +132,10 @@ function init() {
   });
 
   const bottomCaseInput = document.getElementById("bottom-case");
-  bottomCaseInput?.addEventListener("change", function (e) {
-    const { target } = e;
-    if (target instanceof HTMLSelectElement) {
-      leftKeyboard.bottomCase = target.value;
-      rightKeyboard.bottomCase = target.value;
-      changed = true;
-    }
+  bottomCaseInput?.addEventListener("change", function () {
+    leftKeyboard.changeBottomCase();
+    rightKeyboard.changeBottomCase();
+    changed = true;
   });
 
   const inputCaseColor = document.getElementById("case-color");

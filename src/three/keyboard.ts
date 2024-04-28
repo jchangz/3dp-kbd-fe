@@ -135,15 +135,18 @@ export class Keeb {
     this.switchGeometry = newData;
   }
 
-  set bottomCase(type: string) {
-    if (isValidKeyboardBottom(type)) {
-      this.#selectedOptBottom = type;
-      const toHide = type === "standard" ? "vented" : "standard";
-      const caseToShow = this.#caseGroup.getObjectByName(type);
-      const caseToHide = this.#caseGroup.getObjectByName(toHide);
-      if (caseToHide && caseToShow) {
-        caseToHide.visible = false;
-        caseToShow.visible = true;
+  changeBottomCase() {
+    const bottomTypeInput = document.querySelector("#bottom-case option:checked");
+    if (bottomTypeInput instanceof HTMLOptionElement) {
+      const { value } = bottomTypeInput;
+      if (isValidKeyboardBottom(value) && value !== this.#selectedOptBottom) {
+        const caseToShow = this.#caseGroup.getObjectByName(value);
+        const caseToHide = this.#caseGroup.getObjectByName(this.#selectedOptBottom);
+        if (caseToHide && caseToShow) {
+          caseToHide.visible = false;
+          caseToShow.visible = true;
+        }
+        this.#selectedOptBottom = value;
       }
     }
   }
