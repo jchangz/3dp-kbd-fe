@@ -60,8 +60,7 @@ type KBVariantSwitchGeometry = {
   [key in KBVariantOptions]?: KBSwitchPosition;
 };
 
-export class Keeb {
-  #pivotGroup = new THREE.Group();
+export class Keeb extends THREE.Group {
   #keebGroup = new THREE.Group();
   #caseGroup = new THREE.Group();
   #keysGroup = new THREE.Group();
@@ -77,6 +76,8 @@ export class Keeb {
   #switchGeometry: KBVariantSwitchGeometry = {};
 
   constructor({ selectedOptType, selectedOptValue }: { selectedOptType: KBVariantType; selectedOptValue: KBVariantOptions }) {
+    super();
+
     this.#selectedOptType = selectedOptType;
     this.#selectedOptValue = selectedOptValue;
 
@@ -88,11 +89,7 @@ export class Keeb {
 
     this.#keebGroup.add(this.#caseGroup, this.#keysGroup);
     this.#keebGroup.rotation.y = Math.PI / 2;
-    this.#pivotGroup.add(this.#keebGroup);
-  }
-
-  get keyboard() {
-    return this.#pivotGroup;
+    this.add(this.#keebGroup);
   }
 
   get selectedSwitchGeometry() {

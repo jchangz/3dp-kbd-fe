@@ -269,7 +269,7 @@ function init() {
 
       leftKeyboard = new LeftKeeb(keyboard, leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue);
       rightKeyboard = new RightKeeb(keyboard, rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue);
-      mainGroup.add(leftKeyboard.keyboard, rightKeyboard.keyboard);
+      mainGroup.add(leftKeyboard, rightKeyboard);
 
       loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
       loader.load(rightKeyboardData.fileName, (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
