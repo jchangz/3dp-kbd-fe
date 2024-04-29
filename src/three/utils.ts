@@ -1,9 +1,56 @@
+import { three, options } from "../assets/three.json";
 import { usb } from "../assets/geometry/usb.json";
+
+type KBSwitchPosition = {
+  mx: { x: number; y: number; z: number }[];
+  rows: {
+    [key: string]: { length: number; matrix: number[] };
+  };
+};
 
 const KBNAMEOPTIONS = ["quefrency", "sinc", "kbo"] as const;
 type KBNameOptions = (typeof KBNAMEOPTIONS)[number];
 export function isValidKeyboardName(option: string): option is KBNameOptions {
   return KBNAMEOPTIONS.includes(option as KBNameOptions);
+}
+
+const KBOBLOCKEROPTIONS = ["no-blocker", "blocker-1", "blocker-2"] as const;
+type KBOBlockerType = (typeof KBOBLOCKEROPTIONS)[number];
+
+type KBOData = {
+  [key in KBOBlockerType]?: KBSwitchPosition;
+};
+
+export function getSwitchData({ keyboard }: { keyboard: KBNameOptions }) {
+  const setKBOGeometry = (data: KBSwitchPosition, options: KBOData) => {
+    // Transform kbo specific layouts
+    const newData: KBOData = {};
+    KBOBLOCKEROPTIONS.forEach((opt) => {
+      const dataCopy = JSON.parse(JSON.stringify(data));
+      const extraData = options[opt];
+      if (extraData) {
+        dataCopy.mx = [...dataCopy.mx, ...extraData.mx];
+        dataCopy.rows = { ...dataCopy.rows, ...extraData.rows };
+      }
+      newData[opt] = dataCopy;
+    });
+
+    return newData;
+  };
+
+  let left;
+  let right;
+  if (keyboard === "kbo") {
+    left = setKBOGeometry(three.kbo.left.base, options.blocker.left);
+    right = setKBOGeometry(three.kbo.right.base, options.blocker.right);
+  } else {
+    left = three[keyboard].left;
+    right = three[keyboard].right;
+  }
+  return {
+    left,
+    right,
+  };
 }
 
 export function getUSBData({ keyboard }: { keyboard: KBNameOptions }) {

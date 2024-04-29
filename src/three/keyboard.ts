@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
-import { three, options } from "../assets/three.json";
+import { options } from "../assets/three.json";
 import { geometry } from "../assets/geometry.json";
 
 type KBSwitchPosition = {
@@ -73,7 +73,7 @@ export class Keeb extends THREE.Group {
   #switch3DMap = new THREE.Object3D();
 
   #plateGeometry: KBPlateGeometry = {};
-  #switchGeometry: KBVariantSwitchGeometry = {};
+  switchGeometry: KBVariantSwitchGeometry = {};
 
   constructor({ selectedOptType, selectedOptValue }: { selectedOptType: KBVariantType; selectedOptValue: KBVariantOptions }) {
     super();
@@ -88,31 +88,11 @@ export class Keeb extends THREE.Group {
   }
 
   get selectedSwitchGeometry() {
-    return this.#switchGeometry[this.selectedOptValue];
+    return this.switchGeometry[this.selectedOptValue];
   }
 
   set plateGeometry(data: KBPlateGeometry) {
     this.#plateGeometry = data;
-  }
-
-  set switchGeometry(data: KBVariantSwitchGeometry) {
-    this.#switchGeometry = data;
-  }
-
-  setKBOGeometry(data: KBSwitchPosition, options: KBOData) {
-    // Transform kbo specific layouts
-    const newData: KBOData = {};
-    KBOBLOCKEROPTIONS.forEach((opt) => {
-      const dataCopy = JSON.parse(JSON.stringify(data));
-      const extraData = options[opt];
-      if (extraData) {
-        dataCopy.mx = [...dataCopy.mx, ...extraData.mx];
-        dataCopy.rows = { ...dataCopy.rows, ...extraData.rows };
-      }
-      newData[opt] = dataCopy;
-    });
-
-    this.switchGeometry = newData;
   }
 
   changeBottomCase() {
@@ -288,9 +268,6 @@ export class LeftKeeb extends Keeb {
     super({ selectedOptType, selectedOptValue });
 
     this.plateGeometry = geometry[keyboard].left;
-
-    if (keyboard === "kbo") this.setKBOGeometry(three.kbo.left.base, options.blocker.left);
-    else this.switchGeometry = three[keyboard].left;
   }
 }
 
@@ -306,19 +283,6 @@ export class RightKeeb extends Keeb {
     }
 
     this.plateGeometry = geometry[keyboard].right;
-
-    if (keyboard === "kbo") {
-      const {
-          blocker: { right },
-        } = options,
-        {
-          kbo: {
-            right: { base },
-          },
-        } = three;
-
-      this.setKBOGeometry(base, right);
-    } else this.switchGeometry = three[keyboard].right;
   }
 
   get rightShiftData() {

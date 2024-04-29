@@ -8,7 +8,7 @@ import { GainMapLoader } from "@monogrid/gainmap-js";
 import { MathUtils } from "three";
 import { LeftKeeb, RightKeeb, Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
 import { keyLight, spotLight, fillLight, shadowPlane } from "./lights";
-import { getKeyboardData, getUSBData } from "./utils";
+import { getKeyboardData, getSwitchData, getUSBData } from "./utils";
 
 type KBSide = "left" | "right";
 
@@ -267,11 +267,15 @@ function init() {
       const leftKeyboardData = keyboardData.leftSide();
       const rightKeyboardData = keyboardData.rightSide();
 
+      const switchData = getSwitchData({ keyboard });
       const usbGeometry = getUSBData({ keyboard });
 
       leftKeyboard = new LeftKeeb(keyboard, leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue);
       rightKeyboard = new RightKeeb(keyboard, rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue);
       mainGroup.add(leftKeyboard, rightKeyboard);
+
+      leftKeyboard.switchGeometry = switchData.left;
+      rightKeyboard.switchGeometry = switchData.right;
 
       loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
       loader.load(rightKeyboardData.fileName, (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
