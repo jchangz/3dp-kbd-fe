@@ -124,14 +124,7 @@ function init() {
   rightSideInput?.addEventListener("change", () => onKeyboardChange("right"));
 
   const rightShiftInput = document.getElementById("right-shift");
-  rightShiftInput?.addEventListener("change", function (e) {
-    const { target } = e;
-    if (target instanceof HTMLSelectElement) {
-      rightKeyboard.rightShiftValue = target.value;
-      rightKeyboard.updateInstancedMesh();
-      changed = true;
-    }
-  });
+  rightShiftInput?.addEventListener("change", () => onKeyboardChange("right"));
 
   const bottomCaseInput = document.getElementById("bottom-case");
   bottomCaseInput?.addEventListener("change", function () {
@@ -342,15 +335,6 @@ function animate() {
 }
 
 function render() {
-  if (leftKeyboard && rightKeyboard) {
-    const left = leftKeyboard.selectedSwitchGeometry;
-    const right = rightKeyboard.selectedSwitchGeometry;
-
-    if (left && right) {
-      if (rightKeyboard.rightShiftData) right.mx[42] = rightKeyboard.rightShiftData;
-    }
-  }
-
   controls.update();
   renderer.render(scene, camera);
 }

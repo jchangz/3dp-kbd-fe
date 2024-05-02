@@ -97,7 +97,7 @@ export class Keeb extends THREE.Group {
 
   changeBottomCase() {
     const bottomTypeInput = document.querySelector("#bottom-case option:checked");
-    if (bottomTypeInput instanceof HTMLOptionElement) {
+    if (bottomTypeInput && bottomTypeInput instanceof HTMLOptionElement) {
       const { value } = bottomTypeInput;
       if (isValidKeyboardBottom(value) && value !== this.#selectedOptBottom) {
         const caseToShow = this.#caseGroup.getObjectByName(value);
@@ -107,6 +107,21 @@ export class Keeb extends THREE.Group {
           caseToShow.visible = true;
         }
         this.#selectedOptBottom = value;
+      }
+    }
+  }
+
+  changeRightShift() {
+    const rightShiftInput = document.querySelector("#right-shift option:checked");
+    if (rightShiftInput && rightShiftInput instanceof HTMLOptionElement) {
+      const { value } = rightShiftInput;
+      if (isValidRightShift(value) && this.selectedSwitchGeometry && this.selectedSwitchGeometry.mx.length > 41) {
+        var shiftBlocker = this.#caseGroup.getObjectByName("175");
+        if (shiftBlocker) {
+          if (value === "175") shiftBlocker.visible = true;
+          else shiftBlocker.visible = false;
+        }
+        this.selectedSwitchGeometry.mx[42] = options.shift[value];
       }
     }
   }
@@ -226,6 +241,8 @@ export class Keeb extends THREE.Group {
           for (var i = 0, n = filesToDispose.length; i < n; i++) this.#keebGroup.remove(filesToDispose[i]);
         }
       }
+
+      this.changeRightShift();
 
       const { rows, mx } = switchData;
 
