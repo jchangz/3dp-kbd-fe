@@ -95,6 +95,15 @@ export class Keeb extends THREE.Group {
     this.#plateGeometry = data;
   }
 
+  set blocker(value: KBVariantOptions) {
+    const currentBlocker = this.#caseGroup.getObjectByName(this.selectedOptValue);
+    const newBlocker = this.#caseGroup.getObjectByName(value);
+    if (this.selectedOptValue !== "no-blocker" && currentBlocker) currentBlocker.visible = false;
+    if (value !== "no-blocker" && newBlocker) newBlocker.visible = true;
+
+    this.selectedOptValue = value;
+  }
+
   changeBottomCase() {
     const bottomTypeInput = document.querySelector("#bottom-case option:checked");
     if (bottomTypeInput && bottomTypeInput instanceof HTMLOptionElement) {
@@ -140,6 +149,11 @@ export class Keeb extends THREE.Group {
       if (child instanceof THREE.Group && child.name !== "Scene") {
         child.visible = false;
         if (child.name === "top" || child.name === this.#selectedOptBottom) child.visible = true;
+
+        // On initial load, check if we should show the blocker
+        if (this.#selectedOptType === "blocker" || this.selectedOptValue === "65-b") {
+          if (child.name === this.selectedOptValue) child.visible = true;
+        }
       }
     });
 
@@ -289,24 +303,9 @@ export class LeftKeeb extends Keeb {
 }
 
 export class RightKeeb extends Keeb {
-  #rightShiftValue: KBORightShiftOption | false = false;
-
   constructor(keyboard: KBNameOptions, selectedOptType: KBVariantType, selectedOptValue: KBVariantOptions) {
     super({ selectedOptType, selectedOptValue });
 
-    const rightShift = document.querySelector("#right-shift option:checked");
-    if (rightShift && rightShift instanceof HTMLOptionElement && isValidRightShift(rightShift.value)) {
-      this.#rightShiftValue = rightShift.value;
-    }
-
     this.plateGeometry = geometry[keyboard].right;
-  }
-
-  get rightShiftData() {
-    if (this.#rightShiftValue) return options.shift[this.#rightShiftValue];
-  }
-
-  set rightShiftValue(value: string) {
-    if (isValidRightShift(value)) this.#rightShiftValue = value;
   }
 }

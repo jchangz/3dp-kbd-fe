@@ -101,7 +101,7 @@ function init() {
         keyboardSide.createKeys({ scene, keyMat, baseMat });
         setKeyboardToCenter();
       } else {
-        keyboardSide.selectedOptValue = keyboardInfo.selectedOptValue;
+        keyboardSide.blocker = keyboardInfo.selectedOptValue;
         keyboardSide.createKeys({ scene, keyMat, baseMat });
         changed = true;
       }
