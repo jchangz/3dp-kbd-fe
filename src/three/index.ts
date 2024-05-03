@@ -108,6 +108,17 @@ function init() {
     }
   };
 
+  // Change Color Options
+
+  const onColorChange = (e: Event, material: THREE.MeshStandardMaterial) => {
+    const { target } = e;
+    if (target instanceof HTMLInputElement) {
+      const color = new THREE.Color(target.value);
+      material.color.setHex(color.getHex());
+      changed = true;
+    }
+  };
+
   // Event Listeners
 
   const leftSideInput = document.getElementById("left-options");
@@ -134,24 +145,10 @@ function init() {
   });
 
   const inputCaseColor = document.getElementById("case-color");
-  inputCaseColor?.addEventListener("input", function (e) {
-    const { target } = e;
-    if (target instanceof HTMLInputElement) {
-      const color = new THREE.Color(target.value);
-      caseMat.color.setHex(color.getHex());
-      changed = true;
-    }
-  });
+  inputCaseColor?.addEventListener("input", (e) => onColorChange(e, caseMat));
 
   const inputKeycapColor = document.getElementById("keycap-color");
-  inputKeycapColor?.addEventListener("input", function (e) {
-    const { target } = e;
-    if (target instanceof HTMLInputElement) {
-      const color = new THREE.Color(target.value);
-      keyMat.color.setHex(color.getHex());
-      changed = true;
-    }
-  });
+  inputKeycapColor?.addEventListener("input", (e) => onColorChange(e, keyMat));
 
   if (canvas) {
     // Renderer
