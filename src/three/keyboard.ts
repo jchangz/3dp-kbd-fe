@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
-import { options } from "../assets/three.json";
 import { geometry } from "../assets/geometry.json";
 
 type KBSwitchPosition = {
@@ -120,21 +119,6 @@ export class Keeb extends THREE.Group {
     }
   }
 
-  changeRightShift() {
-    const rightShiftInput = document.querySelector("#right-shift option:checked");
-    if (rightShiftInput && rightShiftInput instanceof HTMLOptionElement) {
-      const { value } = rightShiftInput;
-      if (isValidRightShift(value) && this.selectedSwitchGeometry && this.selectedSwitchGeometry.mx.length > 41) {
-        var shiftBlocker = this.#caseGroup.getObjectByName("175");
-        if (shiftBlocker) {
-          if (value === "175") shiftBlocker.visible = true;
-          else shiftBlocker.visible = false;
-        }
-        this.selectedSwitchGeometry.mx[42] = options.shift[value];
-      }
-    }
-  }
-
   updateInstancedMesh() {
     if (this.#switchInstancedMesh) this.#switchInstancedMesh.instanceMatrix.needsUpdate = true;
   }
@@ -233,7 +217,32 @@ export class Keeb extends THREE.Group {
 
   createKeys({ scene, keyMat, baseMat }: { scene: THREE.Scene; keyMat: THREE.MeshStandardMaterial; baseMat: THREE.MeshStandardMaterial }) {
     const _switchMesh = scene.getObjectByName("switch");
-    const switchData = this.selectedSwitchGeometry;
+    let switchData = this.selectedSwitchGeometry;
+
+    const rightShiftInput = document.querySelector("#right-shift option:checked");
+    if (rightShiftInput && rightShiftInput instanceof HTMLOptionElement) {
+      const { value } = rightShiftInput;
+      if (isValidRightShift(value) && switchData && switchData.mx.length > 41) {
+        const shiftName = `r4-${value}`;
+        const shiftData = {
+          "175": { x: 1.5198, y: -0.1082, z: 0.3101 },
+          "275": { x: 1.6151, y: -0.1082, z: 0.3101 },
+        };
+        const shiftMatrixPosition = new Array(42).fill(0);
+        shiftMatrixPosition.push(1);
+
+        const dataCopy = JSON.parse(JSON.stringify(switchData));
+        dataCopy.rows = { ...dataCopy.rows, ...{ [shiftName]: { length: 1, matrix: shiftMatrixPosition } } };
+        dataCopy.mx[42] = shiftData[value];
+        switchData = dataCopy;
+
+        var shiftBlocker = this.#caseGroup.getObjectByName("175");
+        if (shiftBlocker) {
+          if (value === "175") shiftBlocker.visible = true;
+          else shiftBlocker.visible = false;
+        }
+      }
+    }
 
     if (switchData && _switchMesh) {
       const name = "switches";
@@ -256,8 +265,6 @@ export class Keeb extends THREE.Group {
         }
       }
 
-      this.changeRightShift();
-
       const { rows, mx } = switchData;
 
       Object.keys(rows).forEach((row) => {
@@ -276,7 +283,7 @@ export class Keeb extends THREE.Group {
         this.#switchInstancedMesh.name = name;
 
         for (let i = 0; i < switchData.mx.length; i++) {
-          const { mx, rows } = this.selectedSwitchGeometry;
+          const { mx, rows } = switchData;
           this.#switch3DMap.position.set(mx[i].x, mx[i].y, mx[i].z);
           this.#switch3DMap.updateMatrix();
 
