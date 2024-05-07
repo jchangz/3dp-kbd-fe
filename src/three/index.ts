@@ -44,7 +44,7 @@ function init() {
     let progress = (loaded / total) * 100;
   };
   manager2.onLoad = () => {};
-  const reloader = new GLTFLoader(manager2).setMeshoptDecoder(MeshoptDecoder);
+  const reloader = new GLTFLoader(manager2).setDRACOLoader(dracoLoader).setMeshoptDecoder(MeshoptDecoder);
 
   // Materials
 
@@ -96,8 +96,11 @@ function init() {
       if (keyboardInfo.selectedOptType === "macro") {
         const fileName = keyboardInfo.fileName;
         const gltf = await reloader.loadAsync(fileName);
+        const plateName = keyboardInfo.plateName;
+        const gltfPlate = await reloader.loadAsync(plateName);
         keyboardSide.selectedOptValue = keyboardInfo.selectedOptValue;
-        keyboardSide.caseLoader({ gltf, caseMat, faceMat, baseMat });
+        keyboardSide.plateLoader({ gltfPlate, baseMat, pcbMat });
+        keyboardSide.caseLoader({ gltf, caseMat, faceMat });
         keyboardSide.createKeys({ scene, keyMat, baseMat });
         setKeyboardToCenter();
       } else {
@@ -267,8 +270,11 @@ function init() {
       leftKeyboard.switchGeometry = switchData.left;
       rightKeyboard.switchGeometry = switchData.right;
 
-      loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
-      loader.load(rightKeyboardData.fileName, (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat, baseMat }));
+      loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat }));
+      loader.load(rightKeyboardData.fileName, (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat }));
+
+      loader.load(leftKeyboardData.plateName, (gltfPlate) => leftKeyboard.plateLoader({ gltfPlate, baseMat, pcbMat }));
+      loader.load(rightKeyboardData.plateName, (gltfPlate) => rightKeyboard.plateLoader({ gltfPlate, baseMat, pcbMat }));
 
       loader.load("models/switch.glb", function (gltf) {
         gltf.scene.visible = false;

@@ -72,6 +72,7 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
   const leftSide = () => {
     let selectedOptType: KBVariantType = "macro";
     let selectedOptValue: KBVariantOptions = "macro";
+    let plateName = `models/plates/${keyboard.slice(0, 1)}-left`;
     let fileName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-left`;
 
     const leftOption = document.querySelector("#left-options option:checked");
@@ -85,12 +86,15 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
       if (isValidKeyboardVariant(value)) selectedOptValue = value;
     }
 
-    if (selectedOptValue === "macro") fileName += "-macro";
-    fileName += ".glb";
+    if (selectedOptValue === "macro") {
+      (plateName += "-macro"), (fileName += "-macro");
+    }
+    (plateName += ".glb"), (fileName += ".glb");
 
     return {
       selectedOptType,
       selectedOptValue,
+      plateName,
       fileName,
     };
   };
@@ -98,6 +102,7 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
   const rightSide = () => {
     let selectedOptType: KBVariantType = "macro";
     let selectedOptValue: KBVariantOptions = "macro";
+    let plateName = `models/plates/${keyboard.slice(0, 1)}-right`;
     let fileName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-right`;
 
     const rightOption = document.querySelector("#right-options option:checked");
@@ -113,13 +118,16 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
 
     if (selectedOptType === "macro") {
       if (selectedOptValue === "60") fileName += "-60";
-      else fileName += "-65";
+      else {
+        (plateName += "-65"), (fileName += "-65");
+      }
     }
-    fileName += ".glb";
+    (plateName += ".glb"), (fileName += ".glb");
 
     return {
       selectedOptType,
       selectedOptValue,
+      plateName,
       fileName,
     };
   };

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
+import { options } from "../assets/three.json";
 import { geometry } from "../assets/geometry.json";
 
 type KBSwitchPosition = {
@@ -62,6 +63,7 @@ type KBVariantSwitchGeometry = {
 export class Keeb extends THREE.Group {
   #keebGroup = new THREE.Group();
   #caseGroup = new THREE.Group();
+  #plateGroup = new THREE.Group();
   #keysGroup = new THREE.Group();
 
   #selectedOptType: KBVariantType;
@@ -80,7 +82,7 @@ export class Keeb extends THREE.Group {
     this.#selectedOptType = selectedOptType;
     this.selectedOptValue = selectedOptValue;
 
-    this.#keebGroup.add(this.#caseGroup, this.#keysGroup);
+    this.#keebGroup.add(this.#caseGroup, this.#plateGroup, this.#keysGroup);
     this.add(this.#keebGroup);
 
     this.changeBottomCase();
@@ -123,7 +125,7 @@ export class Keeb extends THREE.Group {
     if (this.#switchInstancedMesh) this.#switchInstancedMesh.instanceMatrix.needsUpdate = true;
   }
 
-  caseLoader({ gltf, caseMat, faceMat, baseMat }: { gltf: GLTF; caseMat: THREE.MeshStandardMaterial; faceMat: THREE.MeshStandardMaterial; baseMat: THREE.MeshStandardMaterial }) {
+  caseLoader({ gltf, caseMat, faceMat }: { gltf: GLTF; caseMat: THREE.MeshStandardMaterial; faceMat: THREE.MeshStandardMaterial }) {
     gltf.scene.traverse((child) => {
       child.castShadow = true;
       if (child instanceof THREE.Mesh && child.isMesh) {
@@ -141,60 +143,20 @@ export class Keeb extends THREE.Group {
       }
     });
 
-    this.#createPlates({ baseMat });
-
     this.#caseGroup.clear();
     this.#caseGroup.add(gltf.scene);
   }
 
-  #createPlates({ baseMat }: { baseMat: THREE.MeshStandardMaterial }) {
-    let selectedPlateOption: KBPlateType = "macro";
-
-    if (this.#selectedOptType !== "macro") {
-      // Where there is only a blocker option (eg. sinc right, kbo)
-      selectedPlateOption = "base";
-    } else {
-      // Quefrency right has macro and blocker options
-      // We call 60 as no-macro and 65 as macro
-      switch (this.selectedOptValue) {
-        case "no-macro":
-        case "60":
-          selectedPlateOption = "no-macro";
-          break;
+  plateLoader({ gltfPlate, baseMat, pcbMat }: { gltfPlate: GLTF; baseMat: THREE.MeshStandardMaterial; pcbMat: THREE.MeshStandardMaterial }) {
+    gltfPlate.scene.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.isMesh) {
+        if (child.name === "plate") child.material = baseMat;
+        if (child.name === "pcb") child.material = pcbMat;
       }
-    }
-    const plateData = this.#plateGeometry[selectedPlateOption];
+    });
 
-    if (plateData) {
-      const name = "plate";
-      const coordinatePts = plateData.map((pt) => new THREE.Vector2(pt[0], pt[1]));
-      const shape = new THREE.Shape(coordinatePts);
-      const plateGeometry = new THREE.ExtrudeGeometry(shape, {
-        depth: 0.016,
-        bevelEnabled: false,
-      });
-      const mesh = new THREE.Mesh(plateGeometry, baseMat);
-      mesh.scale.set(1, 1, -1);
-      mesh.rotation.x = -Math.PI / 2 + MathUtils.degToRad(6);
-      mesh.position.y = 0.1762;
-      mesh.name = name;
-
-      // Remove the previous plate mesh if it exists
-      const filesToDispose: THREE.Object3D[] = [];
-      if (this.#keebGroup.children.length) {
-        this.#keebGroup.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.name === name) {
-            filesToDispose.push(child);
-            child.geometry.dispose();
-          }
-        });
-        if (filesToDispose.length) {
-          for (var i = 0, n = filesToDispose.length; i < n; i++) this.#keebGroup.remove(filesToDispose[i]);
-        }
-      }
-
-      this.#keebGroup.add(mesh);
-    }
+    this.#plateGroup.clear();
+    this.#plateGroup.add(gltfPlate.scene);
   }
 
   createUSB(_usbMesh: THREE.Object3D, usbMat: THREE.MeshStandardMaterial, usbGeometry: KBUSBGeometry) {
