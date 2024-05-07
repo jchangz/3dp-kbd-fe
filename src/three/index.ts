@@ -6,7 +6,7 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { GainMapLoader } from "@monogrid/gainmap-js";
 import { MathUtils } from "three";
-import { LeftKeeb, RightKeeb, Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
+import { Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
 import { keyLight, spotLight, fillLight, shadowPlane } from "./lights";
 import { getKeyboardData, getSwitchData, getUSBData } from "./utils";
 
@@ -21,7 +21,7 @@ const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
 let keyboardData;
-let leftKeyboard: LeftKeeb, rightKeyboard: RightKeeb;
+let leftKeyboard: Keeb, rightKeyboard: Keeb;
 let changed = false;
 
 const fov = 50;
@@ -263,8 +263,8 @@ function init() {
       const switchData = getSwitchData({ keyboard });
       const usbGeometry = getUSBData({ keyboard });
 
-      leftKeyboard = new LeftKeeb(keyboard, leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue);
-      rightKeyboard = new RightKeeb(keyboard, rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue);
+      leftKeyboard = new Keeb(leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue);
+      rightKeyboard = new Keeb(rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue);
       mainGroup.add(leftKeyboard, rightKeyboard);
 
       leftKeyboard.switchGeometry = switchData.left;

@@ -1,19 +1,12 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
-import { options } from "../assets/three.json";
-import { geometry } from "../assets/geometry.json";
 
 type KBSwitchPosition = {
   mx: { x: number; y: number; z: number }[];
   rows: {
     [key: string]: { length: number; matrix: number[] };
   };
-};
-
-type KBPlateType = "macro" | "no-macro" | "base";
-type KBPlateGeometry = {
-  [key in KBPlateType]?: number[][];
 };
 
 type KBUSBGeometry = { x: number; y: number; z: number }[];
@@ -73,10 +66,9 @@ export class Keeb extends THREE.Group {
   #switchInstancedMesh?: THREE.InstancedMesh;
   #switch3DMap = new THREE.Object3D();
 
-  #plateGeometry: KBPlateGeometry = {};
   switchGeometry: KBVariantSwitchGeometry = {};
 
-  constructor({ selectedOptType, selectedOptValue }: { selectedOptType: KBVariantType; selectedOptValue: KBVariantOptions }) {
+  constructor(selectedOptType: KBVariantType, selectedOptValue: KBVariantOptions) {
     super();
 
     this.#selectedOptType = selectedOptType;
@@ -90,10 +82,6 @@ export class Keeb extends THREE.Group {
 
   get selectedSwitchGeometry() {
     return this.switchGeometry[this.selectedOptValue];
-  }
-
-  set plateGeometry(data: KBPlateGeometry) {
-    this.#plateGeometry = data;
   }
 
   set blocker(value: KBVariantOptions) {
@@ -260,21 +248,5 @@ export class Keeb extends THREE.Group {
         this.#keebGroup.add(this.#switchInstancedMesh);
       }
     }
-  }
-}
-
-export class LeftKeeb extends Keeb {
-  constructor(keyboard: KBNameOptions, selectedOptType: KBVariantType, selectedOptValue: KBVariantOptions) {
-    super({ selectedOptType, selectedOptValue });
-
-    this.plateGeometry = geometry[keyboard].left;
-  }
-}
-
-export class RightKeeb extends Keeb {
-  constructor(keyboard: KBNameOptions, selectedOptType: KBVariantType, selectedOptValue: KBVariantOptions) {
-    super({ selectedOptType, selectedOptValue });
-
-    this.plateGeometry = geometry[keyboard].right;
   }
 }
