@@ -83,7 +83,8 @@ const { title, kbdType, caseType, optionsList, colorOptions } = Astro.props;
 <Layout title={title}>
   <Three type={caseType} keyboard={kbdType} />
   <div
-    class="absolute bottom-24 flex w-full items-center justify-center space-x-4 text-center font-mono text-xl uppercase"
+    id="configurator"
+    class="absolute bottom-36 flex w-full items-center justify-center space-x-4 text-center font-mono text-xl uppercase tracking-tighter opacity-0 transition-opacity duration-700"
   >
     {
       colorOptions.map((option) => (
@@ -109,7 +110,7 @@ const { title, kbdType, caseType, optionsList, colorOptions } = Astro.props;
           </label>
           <select
             id={type.id}
-            class="focus:shadow-outline block w-full appearance-none rounded-[6px] border border-gray-400 bg-black/[.5] p-4 text-center uppercase leading-tight shadow hover:border-gray-500 focus:outline-none"
+            class="focus:shadow-outline block w-full appearance-none rounded-[6px] border border-gray-400 bg-black/[.5] p-4 text-center text-2xl uppercase leading-tight tracking-tighter shadow hover:border-gray-500 focus:outline-none"
           >
             {type.options.map((opt) => (
               <option

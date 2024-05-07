@@ -20,8 +20,6 @@ mainGroup.rotation.y = Math.PI / 2;
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
-let keyboardData;
-let leftKeyboard: Keeb, rightKeyboard: Keeb;
 let changed = false;
 
 const fov = 50;
@@ -79,38 +77,6 @@ function init() {
   });
   caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
-  // Change Keyboard Options
-
-  const onKeyboardChange = async (side: KBSide) => {
-    let keyboardSide, keyboardInfo;
-    if (side === "left") {
-      keyboardSide = leftKeyboard;
-      keyboardInfo = keyboardData.leftSide();
-    }
-    if (side === "right") {
-      keyboardSide = rightKeyboard;
-      keyboardInfo = keyboardData.rightSide();
-    }
-
-    if (keyboardSide instanceof Keeb) {
-      if (keyboardInfo.selectedOptType === "macro") {
-        const fileName = keyboardInfo.fileName;
-        const gltf = await reloader.loadAsync(fileName);
-        const plateName = keyboardInfo.plateName;
-        const gltfPlate = await reloader.loadAsync(plateName);
-        keyboardSide.selectedOptValue = keyboardInfo.selectedOptValue;
-        keyboardSide.plateLoader({ gltfPlate, baseMat, pcbMat });
-        keyboardSide.caseLoader({ gltf, caseMat, faceMat });
-        keyboardSide.createKeys({ scene, keyMat, baseMat });
-        setKeyboardToCenter();
-      } else {
-        keyboardSide.blocker = keyboardInfo.selectedOptValue;
-        keyboardSide.createKeys({ scene, keyMat, baseMat });
-        changed = true;
-      }
-    }
-  };
-
   // Change Color Options
 
   const onColorChange = (e: Event, material: THREE.MeshStandardMaterial) => {
@@ -121,31 +87,6 @@ function init() {
       changed = true;
     }
   };
-
-  // Event Listeners
-
-  const leftSideInput = document.getElementById("left-options");
-  leftSideInput?.addEventListener("change", () => onKeyboardChange("left"));
-
-  const guiInput = document.getElementsByClassName("three-gui");
-  if (leftSideInput && guiInput.length) {
-    for (let item of guiInput) {
-      if (item instanceof HTMLElement) item.style.height = leftSideInput.offsetHeight + "px";
-    }
-  }
-
-  const rightSideInput = document.getElementById("right-options");
-  rightSideInput?.addEventListener("change", () => onKeyboardChange("right"));
-
-  const rightShiftInput = document.getElementById("right-shift");
-  rightShiftInput?.addEventListener("change", () => onKeyboardChange("right"));
-
-  const bottomCaseInput = document.getElementById("bottom-case");
-  bottomCaseInput?.addEventListener("change", function () {
-    leftKeyboard.changeBottomCase();
-    rightKeyboard.changeBottomCase();
-    changed = true;
-  });
 
   const inputCaseColor = document.getElementById("case-color");
   inputCaseColor?.addEventListener("input", (e) => onColorChange(e, caseMat));
@@ -193,6 +134,18 @@ function init() {
       loadScreen?.addEventListener("transitionend", (e) => {
         if (e.target instanceof HTMLElement) e.target.remove();
       });
+
+      const leftSideInput = document.getElementById("left-options");
+      const guiInput = document.getElementsByClassName("three-gui");
+      if (leftSideInput && guiInput.length) {
+        for (let item of guiInput) {
+          if (item instanceof HTMLElement) item.style.height = leftSideInput.offsetHeight + "px";
+        }
+      }
+
+      const configuratorControls = document.getElementById("configurator");
+      configuratorControls?.classList.add("opacity-100");
+
       pmremGenerator.dispose();
       setKeyboardToCenter();
       changed = true;
@@ -256,15 +209,15 @@ function init() {
     } = canvas;
 
     if (keyboard && isValidKeyboardName(keyboard) && type && isValidKeyboardType(type)) {
-      keyboardData = getKeyboardData({ keyboard, type });
+      const keyboardData = getKeyboardData({ keyboard, type });
       const leftKeyboardData = keyboardData.leftSide();
       const rightKeyboardData = keyboardData.rightSide();
 
       const switchData = getSwitchData({ keyboard });
       const usbGeometry = getUSBData({ keyboard });
 
-      leftKeyboard = new Keeb(leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue);
-      rightKeyboard = new Keeb(rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue);
+      const leftKeyboard = new Keeb(leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue);
+      const rightKeyboard = new Keeb(rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue);
       mainGroup.add(leftKeyboard, rightKeyboard);
 
       leftKeyboard.switchGeometry = switchData.left;
@@ -306,6 +259,56 @@ function init() {
           rightKeyboard.createUSB(_usbMesh, usbMat, usbGeometry.right);
         }
       });
+
+      // Event Listeners
+
+      const leftSideInput = document.getElementById("left-options");
+      leftSideInput?.addEventListener("change", () => onKeyboardChange("left"));
+
+      const rightSideInput = document.getElementById("right-options");
+      rightSideInput?.addEventListener("change", () => onKeyboardChange("right"));
+
+      const rightShiftInput = document.getElementById("right-shift");
+      rightShiftInput?.addEventListener("change", () => onKeyboardChange("right"));
+
+      const bottomCaseInput = document.getElementById("bottom-case");
+      bottomCaseInput?.addEventListener("change", function () {
+        leftKeyboard.changeBottomCase();
+        rightKeyboard.changeBottomCase();
+        changed = true;
+      });
+
+      // Change Keyboard Options
+
+      async function onKeyboardChange(side: KBSide) {
+        let keyboardSide, keyboardInfo;
+        if (side === "left") {
+          keyboardSide = leftKeyboard;
+          keyboardInfo = keyboardData.leftSide();
+        }
+        if (side === "right") {
+          keyboardSide = rightKeyboard;
+          keyboardInfo = keyboardData.rightSide();
+        }
+
+        if (keyboardSide instanceof Keeb && keyboardInfo) {
+          if (keyboardInfo.selectedOptType === "macro") {
+            const fileName = keyboardInfo.fileName;
+            const gltf = await reloader.loadAsync(fileName);
+            const plateName = keyboardInfo.plateName;
+            const gltfPlate = await reloader.loadAsync(plateName);
+            keyboardSide.selectedOptValue = keyboardInfo.selectedOptValue;
+            keyboardSide.plateLoader({ gltfPlate, baseMat, pcbMat });
+            keyboardSide.caseLoader({ gltf, caseMat, faceMat });
+            keyboardSide.createKeys({ scene, keyMat, baseMat });
+            setKeyboardToCenter();
+          } else {
+            keyboardSide.blocker = keyboardInfo.selectedOptValue;
+            keyboardSide.createKeys({ scene, keyMat, baseMat });
+            changed = true;
+          }
+        }
+      }
     }
 
     // Resize Handler
