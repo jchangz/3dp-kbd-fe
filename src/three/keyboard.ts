@@ -93,6 +93,10 @@ export class Keeb extends THREE.Group {
     this.selectedOptValue = value;
   }
 
+  addKeys({ mesh }: { mesh: THREE.Mesh }) {
+    this.#keebGroup.add(mesh);
+  }
+
   changeBottomCase() {
     const bottomTypeInput = document.querySelector("#bottom-case option:checked");
     if (bottomTypeInput && bottomTypeInput instanceof HTMLOptionElement) {

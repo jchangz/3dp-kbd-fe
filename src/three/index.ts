@@ -276,6 +276,23 @@ function init() {
       loader.load(leftKeyboardData.plateName, (gltfPlate) => leftKeyboard.plateLoader({ gltfPlate, baseMat, pcbMat }));
       loader.load(rightKeyboardData.plateName, (gltfPlate) => rightKeyboard.plateLoader({ gltfPlate, baseMat, pcbMat }));
 
+      loader.load("models/keycaps.glb", function (gltf) {
+        const filesToAdd: THREE.Mesh[] = [];
+        gltf.scene.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.isMesh) {
+            if (keyboard === "sinc") child.position.set(0.2382, 0, 0.1184);
+            if (keyboard === "kbo") child.position.set(0, 0, 0.1184);
+            child.material = keyMat;
+            filesToAdd.push(child);
+          }
+        });
+        for (let i = 0; i < filesToAdd.length; i++) {
+          const mesh = filesToAdd[i];
+          if (mesh.name === "left") leftKeyboard.addKeys({ mesh });
+          if (mesh.name === "right") rightKeyboard.addKeys({ mesh });
+        }
+      });
+
       loader.load("models/switch.glb", function (gltf) {
         gltf.scene.visible = false;
         scene.add(gltf.scene);
