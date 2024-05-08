@@ -155,28 +155,28 @@ function init() {
 
     const texloader = new THREE.TextureLoader(manager);
 
-    const caseNormal = texloader.load("models/3dp_normal.webp");
+    const caseNormal = texloader.load("textures/3dp_normal.webp");
     caseNormal.repeat.set(0, 3);
     caseMat.normalMap = caseNormal;
 
-    const caseRoughness = texloader.load("models/3dp_roughness.webp");
+    const caseRoughness = texloader.load("textures/3dp_roughness.webp");
     caseRoughness.repeat.set(0, 3);
     caseMat.roughnessMap = caseRoughness;
 
-    const caseAO = texloader.load("models/3dp_ao.webp");
+    const caseAO = texloader.load("textures/3dp_ao.webp");
     caseAO.repeat.set(0, 3);
     caseMat.aoMap = caseAO;
 
-    const caseFaceNormal = texloader.load("models/3dp_face.webp");
+    const caseFaceNormal = texloader.load("textures/3dp_face.webp");
     caseFaceNormal.repeat.set(25, 25);
     faceMat.normalMap = caseFaceNormal;
 
-    const keyNormal = texloader.load("models/key_normal.webp");
-    keyNormal.repeat.set(2, 2);
+    const keyNormal = texloader.load("textures/key_normal.webp");
+    keyNormal.repeat.set(10, 10);
     keyMat.normalMap = keyNormal;
 
-    const keyRoughness = texloader.load("models/key_roughness.webp");
-    keyRoughness.repeat.set(2, 2);
+    const keyRoughness = texloader.load("textures/key_roughness.webp");
+    keyRoughness.repeat.set(10, 10);
     keyMat.roughnessMap = keyRoughness;
 
     caseNormal.wrapS = caseNormal.wrapT = caseRoughness.wrapS = caseRoughness.wrapT = caseAO.wrapS = caseAO.wrapT = caseFaceNormal.wrapS = caseFaceNormal.wrapT = keyNormal.wrapS = keyNormal.wrapT = keyRoughness.wrapS = keyRoughness.wrapT = THREE.RepeatWrapping;
