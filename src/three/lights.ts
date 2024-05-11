@@ -11,11 +11,11 @@ keyLight.position.set(-2, 4, -2);
 const fillLight = new THREE.DirectionalLight(0xffffff, 1);
 fillLight.position.set(-5, 4, 2);
 
-const spotLight = new THREE.SpotLight(0xffffff, 60);
-spotLight.angle = Math.PI / 5;
+const spotLight = new THREE.SpotLight(0xffffff, 80);
+spotLight.angle = Math.PI / 4;
 spotLight.penumbra = 0.2;
 // spotLight.position.set( -2, 3, 3 );
-spotLight.position.set(-2, 3, 0);
+spotLight.position.set(0, 3, -2);
 spotLight.castShadow = true;
 spotLight.shadow.camera.near = 3;
 spotLight.shadow.camera.far = 10;

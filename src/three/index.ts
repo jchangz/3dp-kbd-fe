@@ -15,7 +15,6 @@ type KBSide = "left" | "right";
 let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
 const scene = new THREE.Scene();
 const mainGroup = new THREE.Group();
-mainGroup.rotation.y = Math.PI / 2;
 
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
@@ -46,34 +45,41 @@ function init() {
 
   // Materials
 
-  const envMapIntensity = 2;
+  const envMapRotation = new THREE.Euler(0, -Math.PI / 2, 0);
+  const envMapIntensity = 0.4;
   const caseMat = new THREE.MeshStandardMaterial({
     roughness: 0.8,
     envMapIntensity: envMapIntensity,
+    envMapRotation: envMapRotation,
   });
   const faceMat = new THREE.MeshStandardMaterial({
     roughness: 0.4,
     envMapIntensity: envMapIntensity,
+    envMapRotation: envMapRotation,
   });
   const keyMat = new THREE.MeshStandardMaterial({
     color: 0x171718,
     roughness: 0.5,
     envMapIntensity: envMapIntensity,
+    envMapRotation: envMapRotation,
   });
   const baseMat = new THREE.MeshStandardMaterial({
     color: 0x171718,
     roughness: 0.3,
     envMapIntensity: envMapIntensity,
+    envMapRotation: envMapRotation,
   });
   const pcbMat = new THREE.MeshStandardMaterial({
-    color: 0x046307,
+    color: 0x301934,
     roughness: 0.8,
     envMapIntensity: envMapIntensity,
+    envMapRotation: envMapRotation,
   });
   const usbMat = new THREE.MeshStandardMaterial({
     metalness: 1,
     roughness: 0.2,
     envMapIntensity: envMapIntensity,
+    envMapRotation: envMapRotation,
   });
   caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
@@ -113,7 +119,7 @@ function init() {
     // Camera
 
     camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(13, 4.5, 0);
+    camera.position.set(0, 6, 12);
     setCameraFOV();
 
     // Controls
@@ -198,7 +204,7 @@ function init() {
     scene.background = new THREE.Color(0x000000);
     scene.fog = new THREE.Fog(0x000000, 10, 50);
 
-    scene.add(keyLight);
+    // scene.add(keyLight);
     scene.add(spotLight);
     scene.add(shadowPlane);
 
@@ -321,7 +327,7 @@ function init() {
 function setKeyboardToCenter() {
   centerBox.setFromObject(mainGroup);
   centerBox.getCenter(centerVector);
-  mainGroup.position.z -= centerVector.z;
+  mainGroup.position.x -= centerVector.x;
   changed = true;
 }
 
