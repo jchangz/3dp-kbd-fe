@@ -15,13 +15,15 @@ type KBSide = "left" | "right";
 let canvas: HTMLElement | null, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, controls: OrbitControls;
 const scene = new THREE.Scene();
 const mainGroup = new THREE.Group();
+const clock = new THREE.Clock();
+const fov = 50;
 
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
-let changed = false;
+let leftKeyboard: Keeb, rightKeyboard: Keeb;
 
-const fov = 50;
+let changed = false;
 
 init();
 animate();
@@ -135,6 +137,11 @@ function init() {
 
     manager.onLoad = () => {
       scene.add(mainGroup);
+
+      setKeyboardToCenter();
+      leftKeyboard.setPivotPoint();
+      rightKeyboard.setPivotPoint();
+
       const loadScreen = document.getElementById("three-loading");
       loadScreen?.classList.add("opacity-0");
       loadScreen?.addEventListener("transitionend", (e) => {
@@ -153,7 +160,6 @@ function init() {
       configuratorControls?.classList.add("opacity-100");
 
       pmremGenerator.dispose();
-      setKeyboardToCenter();
       changed = true;
     };
 
@@ -222,12 +228,19 @@ function init() {
       const switchData = getSwitchData({ keyboard });
       const usbGeometry = getUSBData({ keyboard });
 
-      const leftKeyboard = new Keeb(leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue);
-      const rightKeyboard = new Keeb(rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue);
+      leftKeyboard = new Keeb(leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue, 1);
+      rightKeyboard = new Keeb(rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue, -1);
       mainGroup.add(leftKeyboard, rightKeyboard);
 
       leftKeyboard.switchGeometry = switchData.left;
       rightKeyboard.switchGeometry = switchData.right;
+
+      const leftKeyboardRotation = leftKeyboardData.selectedMountingAngle;
+      const rightKeyboardRotation = rightKeyboardData.selectedMountingAngle;
+      if (leftKeyboardRotation && rightKeyboardRotation) {
+        leftKeyboard.setQuaternion(leftKeyboardRotation);
+        rightKeyboard.setQuaternion(rightKeyboardRotation);
+      }
 
       loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat }));
       loader.load(rightKeyboardData.fileName, (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat }));
@@ -284,7 +297,13 @@ function init() {
         changed = true;
       });
 
-      // Change Keyboard Options
+      const mountingInput = document.getElementById("mounting-option");
+      mountingInput?.addEventListener("change", () => {
+        const leftKeyboardRotation = keyboardData.leftSide().selectedMountingAngle;
+        const rightKeyboardRotation = keyboardData.rightSide().selectedMountingAngle;
+        leftKeyboard.setQuaternion(leftKeyboardRotation);
+        rightKeyboard.setQuaternion(rightKeyboardRotation);
+      });
 
       async function onKeyboardChange(side: KBSide) {
         let keyboardSide, keyboardInfo;
@@ -299,6 +318,9 @@ function init() {
 
         if (keyboardSide instanceof Keeb && keyboardInfo) {
           if (keyboardInfo.selectedOptType === "macro") {
+            // Reset position for recalculating object bounds
+            mainGroup.position.x = 0;
+
             const fileName = keyboardInfo.fileName;
             const gltf = await reloader.loadAsync(fileName);
             const plateName = keyboardInfo.plateName;
@@ -308,6 +330,11 @@ function init() {
             keyboardSide.caseLoader({ gltf, caseMat, faceMat });
             keyboardSide.createKeys({ scene, keyMat, baseMat });
             setKeyboardToCenter();
+
+            keyboardSide.setPivotPoint();
+            if (keyboardInfo.selectedMountingAngle) {
+              keyboardSide.setQuaternion(keyboardInfo.selectedMountingAngle);
+            }
           } else {
             keyboardSide.blocker = keyboardInfo.selectedOptValue;
             keyboardSide.createKeys({ scene, keyMat, baseMat });
@@ -357,6 +384,18 @@ function onWindowResize() {
 
 function animate() {
   requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+  const step = 0.5 * delta;
+  const leftRotationComplete = leftKeyboard.quaternion.equals(leftKeyboard.localQuaternion);
+  const rightRotationComplete = rightKeyboard.quaternion.equals(rightKeyboard.localQuaternion);
+  leftKeyboard.quaternion.rotateTowards(leftKeyboard.localQuaternion, step);
+  rightKeyboard.quaternion.rotateTowards(rightKeyboard.localQuaternion, step);
+
+  if (!leftRotationComplete || !rightRotationComplete) {
+    changed = true;
+  }
+
   if (controls.update() || changed) {
     render();
     changed = false;

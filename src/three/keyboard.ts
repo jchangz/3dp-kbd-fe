@@ -68,11 +68,18 @@ export class Keeb extends THREE.Group {
 
   switchGeometry: KBVariantSwitchGeometry = {};
 
-  constructor(selectedOptType: KBVariantType, selectedOptValue: KBVariantOptions) {
+  #direction: number;
+  #quaternionVector = new THREE.Vector3(0, 0, 1);
+  localQuaternion: THREE.Quaternion = new THREE.Quaternion();
+
+  constructor(selectedOptType: KBVariantType, selectedOptValue: KBVariantOptions, direction: number) {
     super();
 
     this.#selectedOptType = selectedOptType;
     this.selectedOptValue = selectedOptValue;
+    this.#direction = direction;
+
+    this.#quaternionVector.multiplyScalar(direction);
 
     this.#keebGroup.add(this.#caseGroup, this.#plateGroup, this.#keysGroup);
     this.add(this.#keebGroup);
@@ -95,6 +102,28 @@ export class Keeb extends THREE.Group {
 
   addKeys({ mesh }: { mesh: THREE.Mesh }) {
     this.#keebGroup.add(mesh);
+  }
+
+  setQuaternion(rotation: number) {
+    this.localQuaternion.setFromAxisAngle(this.#quaternionVector, MathUtils.degToRad(rotation));
+  }
+
+  setPivotPoint() {
+    const bbox = new THREE.Box3().setFromObject(this.#keebGroup);
+    this.position.set(0, 0, 0);
+    this.#keebGroup.position.set(0, 0, 0);
+
+    if (this.#direction > 0) {
+      // Left Keyboard
+      const pivotPoint = new THREE.Vector3(bbox.min.x, 0, 0);
+      this.#keebGroup.position.sub(pivotPoint);
+      this.position.add(pivotPoint);
+    } else {
+      // Right Keyboard
+      const pivotPoint = new THREE.Vector3(this.#direction * bbox.max.x, 0, 0);
+      this.#keebGroup.position.add(pivotPoint);
+      this.position.sub(pivotPoint);
+    }
   }
 
   changeBottomCase() {
