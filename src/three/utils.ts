@@ -1,5 +1,6 @@
 import { three, options } from "../assets/three.json";
 import { usb } from "../assets/geometry/usb.json";
+import { mounting } from "../assets/geometry/mounting.json";
 
 type KBSwitchPosition = {
   mx: { x: number; y: number; z: number }[];
@@ -68,10 +69,15 @@ export function isValidKeyboardVariant(option: string): option is KBVariantOptio
   return KBVARIANTOPTIONS.includes(option as KBVariantOptions);
 }
 
+type KBMountingAngle = {
+  [key in KBVariantOptions]?: { [key: string]: number };
+};
+
 export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; type: string }) {
   const leftSide = () => {
     let selectedOptType: KBVariantType = "macro";
     let selectedOptValue: KBVariantOptions = "macro";
+    let selectedMountingAngle = 0;
     let plateName = `models/plates/${keyboard.slice(0, 1)}-left`;
     let fileName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-left`;
 
@@ -91,9 +97,21 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
     }
     (plateName += ".glb"), (fileName += ".glb");
 
+    // Set mounting angle from option select
+    const mountingValue = selectedOptType === "blocker" ? "base" : selectedOptValue;
+    const mountingData: KBMountingAngle = mounting[keyboard].left;
+    const selectedMountingValue = mountingData[mountingValue];
+
+    const mountingOption = document.querySelector("#mounting-option option:checked");
+    if (mountingOption instanceof HTMLOptionElement && selectedMountingValue) {
+      const { value } = mountingOption;
+      selectedMountingAngle = selectedMountingValue[value] || 0;
+    }
+
     return {
       selectedOptType,
       selectedOptValue,
+      selectedMountingAngle,
       plateName,
       fileName,
     };
@@ -102,6 +120,7 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
   const rightSide = () => {
     let selectedOptType: KBVariantType = "macro";
     let selectedOptValue: KBVariantOptions = "macro";
+    let selectedMountingAngle = 0;
     let plateName = `models/plates/${keyboard.slice(0, 1)}-right`;
     let fileName = `models/type${type}/t${type}-${keyboard.slice(0, 1)}-right`;
 
@@ -124,9 +143,21 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
     }
     (plateName += ".glb"), (fileName += ".glb");
 
+    // Set mounting angle from option select
+    const mountingValue = selectedOptType === "blocker" ? "base" : selectedOptValue;
+    const mountingData: KBMountingAngle = mounting[keyboard].right;
+    const selectedMountingValue = mountingData[mountingValue];
+
+    const mountingOption = document.querySelector("#mounting-option option:checked");
+    if (mountingOption instanceof HTMLOptionElement && selectedMountingValue) {
+      const { value } = mountingOption;
+      selectedMountingAngle = selectedMountingValue[value] || 0;
+    }
+
     return {
       selectedOptType,
       selectedOptValue,
+      selectedMountingAngle,
       plateName,
       fileName,
     };

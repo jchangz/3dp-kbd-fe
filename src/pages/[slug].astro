@@ -63,6 +63,8 @@ export async function getStaticPaths() {
       optionsList.push(options.bottom);
     }
 
+    optionsList.push(options.mounting);
+
     const colorOptions = [options["case-color"], options["keycap-color"]];
 
     return {

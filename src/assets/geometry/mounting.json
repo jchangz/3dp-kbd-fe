@@ -1,0 +1,52 @@
+{
+  "mounting": {
+    "quefrency": {
+      "left": {
+        "macro": {
+          "small": 4.4
+        },
+        "no-macro": {
+          "small": 5.9
+        }
+      },
+      "right": {
+        "60": {
+          "small": 5.5
+        },
+        "65": {
+          "small": 4.9
+        },
+        "65-b": {
+          "small": 4.9
+        }
+      }
+    },
+    "sinc": {
+      "left": {
+        "macro": {
+          "small": 4.1
+        },
+        "no-macro": {
+          "small": 5.5
+        }
+      },
+      "right": {
+        "base": {
+          "small": 4.6
+        }
+      }
+    },
+    "kbo": {
+      "left": {
+        "base": {
+          "small": 4.5
+        }
+      },
+      "right": {
+        "base": {
+          "small": 3.7
+        }
+      }
+    }
+  }
+}

@@ -37,6 +37,21 @@
           "default": true
         }
       ]
+    },
+    "mounting": {
+      "title": "Mounting",
+      "id": "mounting-option",
+      "options": [
+        {
+          "title": "None",
+          "value": 0
+        },
+        {
+          "title": "S",
+          "value": "small",
+          "default": true
+        }
+      ]
     }
   }
 }
