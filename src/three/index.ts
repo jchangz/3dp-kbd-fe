@@ -21,7 +21,11 @@ const fov = 50;
 const centerVector = new THREE.Vector3(),
   centerBox = new THREE.Box3();
 
-let leftKeyboard: Keeb, rightKeyboard: Keeb;
+const switchGLB = "models/switch.glb",
+  keycapGLB = "models/keycaps.glb",
+  mountingGLB = "models/mounting.glb";
+
+let keyboard_L: Keeb, keyboard_R: Keeb;
 
 let changed = false;
 
@@ -139,8 +143,8 @@ function init() {
       scene.add(mainGroup);
 
       setKeyboardToCenter();
-      leftKeyboard.setPivotPoint();
-      rightKeyboard.setPivotPoint();
+      keyboard_L.setPivotPoint();
+      keyboard_R.setPivotPoint();
 
       const loadScreen = document.getElementById("three-loading");
       loadScreen?.classList.add("opacity-0");
@@ -221,47 +225,45 @@ function init() {
     } = canvas;
 
     if (keyboard && isValidKeyboardName(keyboard) && type && isValidKeyboardType(type)) {
+      const { left: switchData_L, right: switchData_R } = getSwitchData({ keyboard });
+      const { left: usbData_L, right: usbData_R } = getUSBData({ keyboard });
+
       const keyboardData = getKeyboardData({ keyboard, type });
-      const leftKeyboardData = keyboardData.leftSide();
-      const rightKeyboardData = keyboardData.rightSide();
+      const { fileName: fileName_L, plateName: plateName_L, selectedOptType: optType_L, selectedOptValue: optValue_L, selectedMountingPosition: mountPos_L, selectedMountingAngle: mountAngle_L } = keyboardData.leftSide();
+      const { fileName: fileName_R, plateName: plateName_R, selectedOptType: optType_R, selectedOptValue: optValue_R, selectedMountingPosition: mountPos_R, selectedMountingAngle: mountAngle_R } = keyboardData.rightSide();
 
-      const switchData = getSwitchData({ keyboard });
-      const usbGeometry = getUSBData({ keyboard });
+      keyboard_L = new Keeb(optType_L, optValue_L, 1);
+      keyboard_R = new Keeb(optType_R, optValue_R, -1);
+      mainGroup.add(keyboard_L, keyboard_R);
 
-      leftKeyboard = new Keeb(leftKeyboardData.selectedOptType, leftKeyboardData.selectedOptValue, 1);
-      rightKeyboard = new Keeb(rightKeyboardData.selectedOptType, rightKeyboardData.selectedOptValue, -1);
-      mainGroup.add(leftKeyboard, rightKeyboard);
+      keyboard_L.switchGeometry = switchData_L;
+      keyboard_R.switchGeometry = switchData_R;
 
-      leftKeyboard.switchGeometry = switchData.left;
-      rightKeyboard.switchGeometry = switchData.right;
-
-      if (leftKeyboardData.selectedMountingPosition && rightKeyboardData.selectedMountingPosition) {
+      if (mountPos_L && mountPos_R) {
         // Set keyboard mounting position coordinates
-        leftKeyboard.mountingPosition = leftKeyboardData.selectedMountingPosition;
-        rightKeyboard.mountingPosition = rightKeyboardData.selectedMountingPosition;
+        keyboard_L.mountingPosition = mountPos_L;
+        keyboard_R.mountingPosition = mountPos_R;
       }
 
-      loader.load("models/mounting.glb", function (gltfMounting) {
+      loader.load(mountingGLB, function (gltfMounting) {
         gltfMounting.scene.visible = false;
         scene.add(gltfMounting.scene);
 
-        const leftKeyboardRotation = leftKeyboardData.selectedMountingAngle;
-        const rightKeyboardRotation = rightKeyboardData.selectedMountingAngle;
-        if (leftKeyboardRotation && rightKeyboardRotation) {
-          leftKeyboard.setQuaternion(leftKeyboardRotation);
-          rightKeyboard.setQuaternion(rightKeyboardRotation);
-          leftKeyboard.createMounting(scene, caseMat);
-          rightKeyboard.createMounting(scene, caseMat);
+        if (mountAngle_L && mountAngle_R) {
+          keyboard_L.setQuaternion(mountAngle_L);
+          keyboard_R.setQuaternion(mountAngle_R);
+          keyboard_L.createMounting(scene, caseMat);
+          keyboard_R.createMounting(scene, caseMat);
         }
       });
 
-      loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat }));
-      loader.load(rightKeyboardData.fileName, (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat }));
+      loader.load(fileName_L, (gltf) => keyboard_L.caseLoader({ gltf, caseMat, faceMat }));
+      loader.load(fileName_R, (gltf) => keyboard_R.caseLoader({ gltf, caseMat, faceMat }));
 
-      loader.load(leftKeyboardData.plateName, (gltfPlate) => leftKeyboard.plateLoader({ gltfPlate, baseMat, pcbMat }));
-      loader.load(rightKeyboardData.plateName, (gltfPlate) => rightKeyboard.plateLoader({ gltfPlate, baseMat, pcbMat }));
+      loader.load(plateName_L, (gltfPlate) => keyboard_L.plateLoader({ gltfPlate, baseMat, pcbMat }));
+      loader.load(plateName_R, (gltfPlate) => keyboard_R.plateLoader({ gltfPlate, baseMat, pcbMat }));
 
-      loader.load("models/keycaps.glb", function (gltf) {
+      loader.load(keycapGLB, function (gltf) {
         const filesToAdd: THREE.Mesh[] = [];
         gltf.scene.traverse((child) => {
           if (child instanceof THREE.Mesh && child.isMesh) {
@@ -273,22 +275,22 @@ function init() {
         });
         for (let i = 0; i < filesToAdd.length; i++) {
           const mesh = filesToAdd[i];
-          if (mesh.name === "left") leftKeyboard.addKeys({ mesh });
-          if (mesh.name === "right") rightKeyboard.addKeys({ mesh });
+          if (mesh.name === "left") keyboard_L.addKeys({ mesh });
+          if (mesh.name === "right") keyboard_R.addKeys({ mesh });
         }
       });
 
-      loader.load("models/switch.glb", function (gltf) {
+      loader.load(switchGLB, function (gltf) {
         gltf.scene.visible = false;
         scene.add(gltf.scene);
 
-        leftKeyboard.createKeys({ scene, keyMat, baseMat });
-        rightKeyboard.createKeys({ scene, keyMat, baseMat });
+        keyboard_L.createKeys({ scene, keyMat, baseMat });
+        keyboard_R.createKeys({ scene, keyMat, baseMat });
 
         const _usbMesh = scene.getObjectByName("usb");
         if (_usbMesh) {
-          leftKeyboard.createUSB(_usbMesh, usbMat, usbGeometry.left);
-          rightKeyboard.createUSB(_usbMesh, usbMat, usbGeometry.right);
+          keyboard_L.createUSB(_usbMesh, usbMat, usbData_L);
+          keyboard_R.createUSB(_usbMesh, usbMat, usbData_R);
         }
       });
 
@@ -305,57 +307,54 @@ function init() {
 
       const bottomCaseInput = document.getElementById("bottom-case");
       bottomCaseInput?.addEventListener("change", function () {
-        leftKeyboard.changeBottomCase();
-        rightKeyboard.changeBottomCase();
+        keyboard_L.changeBottomCase();
+        keyboard_R.changeBottomCase();
         changed = true;
       });
 
       const mountingInput = document.getElementById("mounting-option");
       mountingInput?.addEventListener("change", () => {
-        const leftKeyboardRotation = keyboardData.leftSide().selectedMountingAngle;
-        const rightKeyboardRotation = keyboardData.rightSide().selectedMountingAngle;
-        leftKeyboard.setQuaternion(leftKeyboardRotation);
-        rightKeyboard.setQuaternion(rightKeyboardRotation);
-        leftKeyboard.createMounting(scene, caseMat);
-        rightKeyboard.createMounting(scene, caseMat);
+        const { selectedMountingAngle: mountAngle_L } = keyboardData.leftSide();
+        const { selectedMountingAngle: mountAngle_R } = keyboardData.rightSide();
+        keyboard_L.setQuaternion(mountAngle_L);
+        keyboard_R.setQuaternion(mountAngle_R);
+        keyboard_L.createMounting(scene, caseMat);
+        keyboard_R.createMounting(scene, caseMat);
       });
 
       async function onKeyboardChange(side: KBSide) {
         let keyboardSide, keyboardInfo;
         if (side === "left") {
-          keyboardSide = leftKeyboard;
+          keyboardSide = keyboard_L;
           keyboardInfo = keyboardData.leftSide();
         }
         if (side === "right") {
-          keyboardSide = rightKeyboard;
+          keyboardSide = keyboard_R;
           keyboardInfo = keyboardData.rightSide();
         }
 
         if (keyboardSide instanceof Keeb && keyboardInfo) {
-          if (keyboardInfo.selectedOptType === "macro") {
+          const { fileName, plateName, selectedOptType, selectedOptValue, selectedMountingPosition, selectedMountingAngle } = keyboardInfo;
+          if (selectedOptType === "macro") {
             // Reset position for recalculating object bounds
             mainGroup.position.x = 0;
 
-            const fileName = keyboardInfo.fileName;
             const gltf = await reloader.loadAsync(fileName);
-            const plateName = keyboardInfo.plateName;
             const gltfPlate = await reloader.loadAsync(plateName);
-            keyboardSide.selectedOptValue = keyboardInfo.selectedOptValue;
+            keyboardSide.selectedOptValue = selectedOptValue;
             keyboardSide.plateLoader({ gltfPlate, baseMat, pcbMat });
             keyboardSide.caseLoader({ gltf, caseMat, faceMat });
             keyboardSide.createKeys({ scene, keyMat, baseMat });
             setKeyboardToCenter();
 
             keyboardSide.setPivotPoint();
-            if (keyboardInfo.selectedMountingPosition) {
-              keyboardSide.mountingPosition = keyboardInfo.selectedMountingPosition;
-            }
-            if (keyboardInfo.selectedMountingAngle) {
-              keyboardSide.setQuaternion(keyboardInfo.selectedMountingAngle);
+            if (selectedMountingPosition) keyboardSide.mountingPosition = selectedMountingPosition;
+            if (selectedMountingAngle) {
+              keyboardSide.setQuaternion(selectedMountingAngle);
               keyboardSide.createMounting(scene, caseMat);
             }
           } else {
-            keyboardSide.blocker = keyboardInfo.selectedOptValue;
+            keyboardSide.blocker = selectedOptValue;
             keyboardSide.createKeys({ scene, keyMat, baseMat });
             changed = true;
           }
@@ -406,10 +405,10 @@ function animate() {
 
   const delta = clock.getDelta();
   const step = 0.5 * delta;
-  const leftRotationComplete = leftKeyboard.quaternion.equals(leftKeyboard.localQuaternion);
-  const rightRotationComplete = rightKeyboard.quaternion.equals(rightKeyboard.localQuaternion);
-  leftKeyboard.quaternion.rotateTowards(leftKeyboard.localQuaternion, step);
-  rightKeyboard.quaternion.rotateTowards(rightKeyboard.localQuaternion, step);
+  const leftRotationComplete = keyboard_L.quaternion.equals(keyboard_L.localQuaternion);
+  const rightRotationComplete = keyboard_R.quaternion.equals(keyboard_R.localQuaternion);
+  keyboard_L.quaternion.rotateTowards(keyboard_L.localQuaternion, step);
+  keyboard_R.quaternion.rotateTowards(keyboard_R.localQuaternion, step);
 
   if (!leftRotationComplete || !rightRotationComplete) {
     changed = true;
