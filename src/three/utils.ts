@@ -1,6 +1,6 @@
 import { three, options } from "../assets/three.json";
 import { usb } from "../assets/geometry/usb.json";
-import { mounting } from "../assets/geometry/mounting.json";
+import { mounting_angle, mounting_position } from "../assets/geometry/mounting.json";
 
 type KBSwitchPosition = {
   mx: { x: number; y: number; z: number }[];
@@ -73,6 +73,10 @@ type KBMountingAngle = {
   [key in KBVariantOptions]?: { [key: string]: number };
 };
 
+type KBMountingPosition = {
+  [key in KBVariantOptions]?: { x: number; y: number; z: number }[];
+};
+
 export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; type: string }) {
   const leftSide = () => {
     let selectedOptType: KBVariantType = "macro";
@@ -99,19 +103,22 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
 
     // Set mounting angle from option select
     const mountingValue = selectedOptType === "blocker" ? "base" : selectedOptValue;
-    const mountingData: KBMountingAngle = mounting[keyboard].left;
-    const selectedMountingValue = mountingData[mountingValue];
+    const mountingAngleData: KBMountingAngle = mounting_angle[keyboard].left;
+    const mountingPositionData: KBMountingPosition = mounting_position[keyboard].left;
+    const mountingAngle = mountingAngleData[mountingValue];
+    const selectedMountingPosition = mountingPositionData[mountingValue];
 
     const mountingOption = document.querySelector("#mounting-option option:checked");
-    if (mountingOption instanceof HTMLOptionElement && selectedMountingValue) {
+    if (mountingOption instanceof HTMLOptionElement && mountingAngle) {
       const { value } = mountingOption;
-      selectedMountingAngle = selectedMountingValue[value] || 0;
+      selectedMountingAngle = mountingAngle[value] || 0;
     }
 
     return {
       selectedOptType,
       selectedOptValue,
       selectedMountingAngle,
+      selectedMountingPosition,
       plateName,
       fileName,
     };
@@ -145,19 +152,22 @@ export function getKeyboardData({ keyboard, type }: { keyboard: KBNameOptions; t
 
     // Set mounting angle from option select
     const mountingValue = selectedOptType === "blocker" ? "base" : selectedOptValue;
-    const mountingData: KBMountingAngle = mounting[keyboard].right;
-    const selectedMountingValue = mountingData[mountingValue];
+    const mountingAngleData: KBMountingAngle = mounting_angle[keyboard].right;
+    const mountingPositionData: KBMountingPosition = mounting_position[keyboard].right;
+    const mountingAngle = mountingAngleData[mountingValue];
+    const selectedMountingPosition = mountingPositionData[mountingValue];
 
     const mountingOption = document.querySelector("#mounting-option option:checked");
-    if (mountingOption instanceof HTMLOptionElement && selectedMountingValue) {
+    if (mountingOption instanceof HTMLOptionElement && mountingAngle) {
       const { value } = mountingOption;
-      selectedMountingAngle = selectedMountingValue[value] || 0;
+      selectedMountingAngle = mountingAngle[value] || 0;
     }
 
     return {
       selectedOptType,
       selectedOptValue,
       selectedMountingAngle,
+      selectedMountingPosition,
       plateName,
       fileName,
     };

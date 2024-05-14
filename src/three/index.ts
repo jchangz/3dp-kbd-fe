@@ -235,12 +235,25 @@ function init() {
       leftKeyboard.switchGeometry = switchData.left;
       rightKeyboard.switchGeometry = switchData.right;
 
-      const leftKeyboardRotation = leftKeyboardData.selectedMountingAngle;
-      const rightKeyboardRotation = rightKeyboardData.selectedMountingAngle;
-      if (leftKeyboardRotation && rightKeyboardRotation) {
-        leftKeyboard.setQuaternion(leftKeyboardRotation);
-        rightKeyboard.setQuaternion(rightKeyboardRotation);
+      if (leftKeyboardData.selectedMountingPosition && rightKeyboardData.selectedMountingPosition) {
+        // Set keyboard mounting position coordinates
+        leftKeyboard.mountingPosition = leftKeyboardData.selectedMountingPosition;
+        rightKeyboard.mountingPosition = rightKeyboardData.selectedMountingPosition;
       }
+
+      loader.load("models/mounting.glb", function (gltfMounting) {
+        gltfMounting.scene.visible = false;
+        scene.add(gltfMounting.scene);
+
+        const leftKeyboardRotation = leftKeyboardData.selectedMountingAngle;
+        const rightKeyboardRotation = rightKeyboardData.selectedMountingAngle;
+        if (leftKeyboardRotation && rightKeyboardRotation) {
+          leftKeyboard.setQuaternion(leftKeyboardRotation);
+          rightKeyboard.setQuaternion(rightKeyboardRotation);
+          leftKeyboard.createMounting(scene, caseMat);
+          rightKeyboard.createMounting(scene, caseMat);
+        }
+      });
 
       loader.load(leftKeyboardData.fileName, (gltf) => leftKeyboard.caseLoader({ gltf, caseMat, faceMat }));
       loader.load(rightKeyboardData.fileName, (gltf) => rightKeyboard.caseLoader({ gltf, caseMat, faceMat }));
@@ -303,6 +316,8 @@ function init() {
         const rightKeyboardRotation = keyboardData.rightSide().selectedMountingAngle;
         leftKeyboard.setQuaternion(leftKeyboardRotation);
         rightKeyboard.setQuaternion(rightKeyboardRotation);
+        leftKeyboard.createMounting(scene, caseMat);
+        rightKeyboard.createMounting(scene, caseMat);
       });
 
       async function onKeyboardChange(side: KBSide) {
@@ -332,8 +347,12 @@ function init() {
             setKeyboardToCenter();
 
             keyboardSide.setPivotPoint();
+            if (keyboardInfo.selectedMountingPosition) {
+              keyboardSide.mountingPosition = keyboardInfo.selectedMountingPosition;
+            }
             if (keyboardInfo.selectedMountingAngle) {
               keyboardSide.setQuaternion(keyboardInfo.selectedMountingAngle);
+              keyboardSide.createMounting(scene, caseMat);
             }
           } else {
             keyboardSide.blocker = keyboardInfo.selectedOptValue;

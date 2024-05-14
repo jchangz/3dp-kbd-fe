@@ -58,6 +58,7 @@ export class Keeb extends THREE.Group {
   #caseGroup = new THREE.Group();
   #plateGroup = new THREE.Group();
   #keysGroup = new THREE.Group();
+  #mountingGroup = new THREE.Group();
 
   #selectedOptType: KBVariantType;
   selectedOptValue: KBVariantOptions;
@@ -65,6 +66,8 @@ export class Keeb extends THREE.Group {
 
   #switchInstancedMesh?: THREE.InstancedMesh;
   #switch3DMap = new THREE.Object3D();
+
+  mountingPosition: KBUSBGeometry = [];
 
   switchGeometry: KBVariantSwitchGeometry = {};
 
@@ -81,7 +84,7 @@ export class Keeb extends THREE.Group {
 
     this.#quaternionVector.multiplyScalar(direction);
 
-    this.#keebGroup.add(this.#caseGroup, this.#plateGroup, this.#keysGroup);
+    this.#keebGroup.add(this.#caseGroup, this.#plateGroup, this.#keysGroup, this.#mountingGroup);
     this.add(this.#keebGroup);
 
     this.changeBottomCase();
@@ -195,6 +198,36 @@ export class Keeb extends THREE.Group {
       }
 
       this.#keebGroup.add(usbInstancedMesh);
+    }
+  }
+
+  createMounting(scene: THREE.Scene, material: THREE.MeshStandardMaterial) {
+    const mountingInput = document.querySelector("#mounting-option option:checked");
+    if (mountingInput && mountingInput instanceof HTMLOptionElement) {
+      const { value } = mountingInput;
+      const _mountingMesh = scene.getObjectByName(value);
+
+      if (this.#mountingGroup.children.length) {
+        this.#mountingGroup.traverse((child) => {
+          if (child instanceof THREE.InstancedMesh) {
+            child.geometry.dispose();
+          }
+        });
+        this.#mountingGroup.clear();
+      }
+
+      if (_mountingMesh && _mountingMesh instanceof THREE.Mesh && this.mountingPosition.length) {
+        const mounting3DMap = new THREE.Object3D();
+        const mountingInstancedMesh = new THREE.InstancedMesh(_mountingMesh.geometry.clone(), material, this.mountingPosition.length);
+        mountingInstancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+        for (let i = 0; i < this.mountingPosition.length; i++) {
+          mounting3DMap.position.set(this.mountingPosition[i].x, this.mountingPosition[i].y, this.mountingPosition[i].z);
+          mounting3DMap.updateMatrix();
+          mountingInstancedMesh.setMatrixAt(i, mounting3DMap.matrix);
+        }
+        this.#mountingGroup.add(mountingInstancedMesh);
+      }
     }
   }
 
