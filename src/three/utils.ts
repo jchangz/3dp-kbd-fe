@@ -1,4 +1,4 @@
-import { three, options } from "../assets/three.json";
+import { three, options } from "../assets/geometry/switch.json";
 import { usb } from "../assets/geometry/usb.json";
 import { mounting_angle, mounting_position } from "../assets/geometry/mounting.json";
 
@@ -42,8 +42,17 @@ export function getSwitchData({ keyboard }: { keyboard: KBNameOptions }) {
   let left;
   let right;
   if (keyboard === "kbo") {
-    left = setKBOGeometry(three.kbo.left.base, options.blocker.left);
-    right = setKBOGeometry(three.kbo.right.base, options.blocker.right);
+    const {
+      kbo: {
+        left: { base: base_L },
+        right: { base: base_R },
+      },
+    } = three;
+    const {
+      blocker: { left: blocker_L, right: blocker_R },
+    } = options;
+    left = setKBOGeometry(base_L, blocker_L);
+    right = setKBOGeometry(base_R, blocker_R);
   } else {
     left = three[keyboard].left;
     right = three[keyboard].right;
@@ -55,10 +64,10 @@ export function getSwitchData({ keyboard }: { keyboard: KBNameOptions }) {
 }
 
 export function getUSBData({ keyboard }: { keyboard: KBNameOptions }) {
-  const usbGeometry = usb[keyboard];
+  const { left, right } = usb[keyboard];
   return {
-    left: usbGeometry.left,
-    right: usbGeometry.right,
+    left: left,
+    right: right,
   };
 }
 
