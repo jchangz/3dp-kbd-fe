@@ -245,6 +245,8 @@ function init() {
         keyboard_R.mountingPosition = mountPos_R;
       }
 
+      const mountingTranslateZ = type === "2" ? 0.1349 : 0;
+
       loader.load(mountingGLB, function (gltfMounting) {
         gltfMounting.scene.visible = false;
         scene.add(gltfMounting.scene);
@@ -252,8 +254,8 @@ function init() {
         if (mountAngle_L && mountAngle_R) {
           keyboard_L.setQuaternion(mountAngle_L);
           keyboard_R.setQuaternion(mountAngle_R);
-          keyboard_L.createMounting(scene, caseMat);
-          keyboard_R.createMounting(scene, caseMat);
+          keyboard_L.createMounting(scene, caseMat, mountingTranslateZ);
+          keyboard_R.createMounting(scene, caseMat, mountingTranslateZ);
         }
       });
 
@@ -318,8 +320,8 @@ function init() {
         const { selectedMountingAngle: mountAngle_R } = keyboardData.rightSide();
         keyboard_L.setQuaternion(mountAngle_L);
         keyboard_R.setQuaternion(mountAngle_R);
-        keyboard_L.createMounting(scene, caseMat);
-        keyboard_R.createMounting(scene, caseMat);
+        keyboard_L.createMounting(scene, caseMat, mountingTranslateZ);
+        keyboard_R.createMounting(scene, caseMat, mountingTranslateZ);
       });
 
       async function onKeyboardChange(side: KBSide) {
@@ -351,7 +353,7 @@ function init() {
             if (selectedMountingPosition) keyboardSide.mountingPosition = selectedMountingPosition;
             if (selectedMountingAngle) {
               keyboardSide.setQuaternion(selectedMountingAngle);
-              keyboardSide.createMounting(scene, caseMat);
+              keyboardSide.createMounting(scene, caseMat, mountingTranslateZ);
             }
           } else {
             keyboardSide.blocker = selectedOptValue;

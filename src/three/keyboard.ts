@@ -201,7 +201,7 @@ export class Keeb extends THREE.Group {
     }
   }
 
-  createMounting(scene: THREE.Scene, material: THREE.MeshStandardMaterial) {
+  createMounting(scene: THREE.Scene, material: THREE.MeshStandardMaterial, translate: number) {
     const mountingInput = document.querySelector("#mounting-option option:checked");
     if (mountingInput && mountingInput instanceof HTMLOptionElement) {
       const { value } = mountingInput;
@@ -222,7 +222,7 @@ export class Keeb extends THREE.Group {
         mountingInstancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
         for (let i = 0; i < this.mountingPosition.length; i++) {
-          mounting3DMap.position.set(this.mountingPosition[i].x, this.mountingPosition[i].y, this.mountingPosition[i].z);
+          mounting3DMap.position.set(this.mountingPosition[i].x, this.mountingPosition[i].y, this.mountingPosition[i].z - (i === 1 ? translate : 0));
           mounting3DMap.updateMatrix();
           mountingInstancedMesh.setMatrixAt(i, mounting3DMap.matrix);
         }
