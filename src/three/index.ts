@@ -7,7 +7,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { GainMapLoader } from "@monogrid/gainmap-js";
 import { MathUtils } from "three";
 import { Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
-import { keyLight, spotLight, fillLight, shadowPlane } from "./lights";
+import { keyLight, spotLight, fillLight } from "./lights";
 import { getKeyboardData, getSwitchData, getUSBData } from "./utils";
 
 type KBSide = "left" | "right";
@@ -86,6 +86,11 @@ function init() {
     roughness: 0.2,
     envMapIntensity: envMapIntensity,
     envMapRotation: envMapRotation,
+  });
+  const floorMat = new THREE.MeshStandardMaterial({
+    color: 0x000000,
+    roughness: 0.8,
+    metalness: 0.6,
   });
   caseMat.color = faceMat.color = new THREE.Color(0x171718);
 
@@ -195,7 +200,31 @@ function init() {
     keyRoughness.repeat.set(10, 10);
     keyMat.roughnessMap = keyRoughness;
 
-    caseNormal.wrapS = caseNormal.wrapT = caseRoughness.wrapS = caseRoughness.wrapT = caseAO.wrapS = caseAO.wrapT = caseFaceNormal.wrapS = caseFaceNormal.wrapT = keyNormal.wrapS = keyNormal.wrapT = keyRoughness.wrapS = keyRoughness.wrapT = THREE.RepeatWrapping;
+    const floorNormal = texloader.load("textures/concrete_normal.webp");
+    floorNormal.repeat.set(50, 50);
+    floorMat.normalMap = floorNormal;
+
+    const floorRough = texloader.load("textures/concrete_roughness.webp");
+    floorRough.repeat.set(50, 50);
+    floorMat.roughnessMap = floorRough;
+
+    floorRough.wrapS =
+      floorRough.wrapT =
+      floorNormal.wrapS =
+      floorNormal.wrapT =
+      caseNormal.wrapS =
+      caseNormal.wrapT =
+      caseRoughness.wrapS =
+      caseRoughness.wrapT =
+      caseAO.wrapS =
+      caseAO.wrapT =
+      caseFaceNormal.wrapS =
+      caseFaceNormal.wrapT =
+      keyNormal.wrapS =
+      keyNormal.wrapT =
+      keyRoughness.wrapS =
+      keyRoughness.wrapT =
+        THREE.RepeatWrapping;
 
     // Environment Loader
 
@@ -216,6 +245,10 @@ function init() {
 
     // scene.add(keyLight);
     scene.add(spotLight);
+
+    const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), floorMat);
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
     // Create Keyboard
