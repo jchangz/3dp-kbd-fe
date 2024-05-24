@@ -7,18 +7,10 @@ interface Props {
 const { type, keyboard } = Astro.props;
 ---
 
-<section data-type={type} data-keyboard={keyboard} class="canvas col-span-12 row-start-1 h-screen bg-[#1f1f1f]">
-  <div class="absolute left-0 top-0 flex h-full w-full items-center justify-center bg-[#f5f5f5] transition-opacity duration-500" id="three-loading">
-    <span class="text-black">Loading</span>
+<section data-type={type} data-keyboard={keyboard} class="canvas col-span-12 row-start-1 h-screen bg-[#000000]">
+  <div class="absolute left-0 top-0 flex h-full w-full items-center justify-center bg-[#000000] transition-opacity duration-500" id="three-loading">
+    <span>Loading</span>
   </div>
 </section>
 
 <script src="@three/index"></script>
-
-<style is:global>
-  #gui {
-    position: absolute;
-    bottom: 1rem;
-    left: 1rem;
-  }
-</style>
