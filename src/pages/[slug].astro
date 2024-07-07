@@ -86,47 +86,83 @@ const { title, kbdType, caseType, optionsList, colorOptions } = Astro.props;
   <Three type={caseType} keyboard={kbdType} />
   <div
     id="configurator"
-    class="absolute bottom-36 flex w-full items-center justify-center space-x-4 text-center font-mono text-xl uppercase tracking-tighter opacity-0 transition-opacity duration-700"
+    class="col-span-12 flex w-full flex-col justify-end border-[#A3A3A3] p-2 uppercase opacity-0 transition-opacity duration-700 xl:col-span-3 xl:col-start-1 xl:row-start-1"
   >
-    {
-      colorOptions.map((option) => (
-        <div class="relative inline-block w-24">
-          <label class="text-base text-gray-300" for={option.id}>
-            {option.title}
-          </label>
-          <input
-            class="three-gui focus:shadow-outline block w-full appearance-none rounded-[6px] border border-gray-400 bg-black/[.5] p-2 text-center leading-tight shadow hover:border-gray-500 focus:outline-none"
-            type="color"
-            id={option.id}
-            name={option.title}
-            value="#171718"
-          />
-        </div>
-      ))
-    }
-    {
-      optionsList.map((type) => (
-        <div class="relative inline-block w-48">
-          <label class="text-base text-gray-300" for={type.id}>
-            {type.title}
-          </label>
-          <select
-            id={type.id}
-            class="focus:shadow-outline block w-full appearance-none rounded-[6px] border border-gray-400 bg-black/[.5] p-4 text-center text-2xl uppercase leading-tight tracking-tighter shadow hover:border-gray-500 focus:outline-none"
-          >
-            {type.options.map((opt) => (
-              <option
-                class="bg-black"
-                data-type={opt["data-type"]}
-                value={opt.value}
-                selected={opt.default && "selected"}
+    <div class="panel">
+      <p class="panel-heading">Settings</p>
+      {
+        colorOptions.map((option) => (
+          <div class="panel-section">
+            <label class="panel-section-label" for={option.id}>
+              {option.title}:
+            </label>
+            <input
+              class="panel-section-input three-gui w-6/12 border-inherit p-1"
+              type="color"
+              id={option.id}
+              name={option.title}
+              value="#171718"
+            />
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="panel">
+      <p class="panel-heading">Configuration</p>
+      {
+        optionsList.map((type) => (
+          <div class="panel-section">
+            <label class="panel-section-label" for={type.id}>
+              {type.title}:
+            </label>
+            <div class="relative w-6/12 border-inherit">
+              <select
+                id={type.id}
+                class="panel-section-input w-full p-2 uppercase"
               >
-                {opt.title}
-              </option>
-            ))}
-          </select>
-        </div>
-      ))
-    }
+                {type.options.map((opt) => (
+                  <option
+                    class="bg-black"
+                    data-type={opt["data-type"]}
+                    value={opt.value}
+                    selected={opt.default && "selected"}
+                  >
+                    {opt.title}
+                  </option>
+                ))}
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white">
+                <svg
+                  class="h-4 w-4 fill-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
   </div>
 </Layout>
+
+<style>
+  .panel {
+    @apply mb-10 divide-y border border-inherit font-mono tracking-tighter xl:max-w-sm;
+    .panel-heading {
+      @apply bg-white p-1 px-2 font-sans text-xs tracking-normal text-black;
+    }
+    .panel-section {
+      @apply relative flex items-center divide-x border-inherit;
+      .panel-section-label {
+        @apply w-6/12 px-3 text-base text-gray-300;
+      }
+      .panel-section-input {
+        @apply block appearance-none bg-transparent uppercase leading-tight shadow focus:outline-none focus:ring;
+      }
+    }
+  }
+</style>
