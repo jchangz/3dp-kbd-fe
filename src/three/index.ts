@@ -10,6 +10,7 @@ import { Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant 
 import { keyLight, spotLight, fillLight } from "./lights";
 import { caseMat, faceMat, keyMat, baseMat, pcbMat, usbMat, floorMat, textureLoader } from "./materials";
 import { getKeyboardData, getSwitchData, getUSBData } from "./utils";
+import { gsap } from "gsap";
 
 type KBSide = "left" | "right";
 
@@ -85,8 +86,8 @@ function init() {
 
     // Camera
 
-    camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(0, 6, 12);
+    camera = new THREE.PerspectiveCamera(fov, canvas.offsetWidth / canvas.offsetHeight, 1, 1000);
+    camera.position.set(0, 200, 20);
     setCameraFOV();
 
     // Controls
@@ -95,8 +96,10 @@ function init() {
     controls.enableDamping = true;
     // controls.autoRotate = true;
     controls.minDistance = 5;
+    controls.enableZoom = false;
     controls.maxDistance = 20;
     controls.addEventListener("change", () => (changed = true));
+    controls.enabled = false;
 
     // On Initial Load
 
@@ -123,6 +126,17 @@ function init() {
 
       const configuratorControls = document.getElementById("configurator");
       configuratorControls?.classList.add("opacity-100");
+
+      gsap.to(camera.position, {
+        duration: 1,
+        x: 0,
+        y: 6,
+        z: 12,
+        ease: "power1.out",
+        onComplete: function () {
+          controls.enabled = true;
+        },
+      });
 
       pmremGenerator.dispose();
       changed = true;
