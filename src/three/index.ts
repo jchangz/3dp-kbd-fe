@@ -111,7 +111,6 @@ function init() {
       keyboard_R.setPivotPoint();
 
       const loadScreen = document.getElementById("three-loading");
-      loadScreen?.classList.add("opacity-0");
       loadScreen?.addEventListener("transitionend", (e) => {
         if (e.target instanceof HTMLElement) e.target.remove();
       });
@@ -125,18 +124,28 @@ function init() {
       }
 
       const configuratorControls = document.getElementById("configurator");
-      configuratorControls?.classList.add("opacity-100");
 
-      gsap.to(camera.position, {
-        duration: 1,
-        x: 0,
-        y: 6,
-        z: 12,
-        ease: "power1.out",
-        onComplete: function () {
-          controls.enabled = true;
-        },
-      });
+      let t1 = gsap.timeline();
+      t1.to(loadScreen, {
+        opacity: 0,
+      })
+        .to(camera.position, {
+          duration: 1,
+          x: 0,
+          y: 6,
+          z: 12,
+          ease: "power1.out",
+          onComplete: function () {
+            controls.enabled = true;
+          },
+        })
+        .to(
+          configuratorControls,
+          {
+            opacity: 1,
+          },
+          "<",
+        );
 
       pmremGenerator.dispose();
       changed = true;
