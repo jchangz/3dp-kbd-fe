@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 const envMapRotation = new THREE.Euler(0, -Math.PI / 2, 0);
-const envMapIntensity = 0.4;
+const envMapIntensity = 0.5;
 
 const caseMat = new THREE.MeshStandardMaterial({
   roughness: 0.8,
@@ -39,7 +39,7 @@ const usbMat = new THREE.MeshStandardMaterial({
 });
 const floorMat = new THREE.MeshStandardMaterial({
   color: 0x000000,
-  roughness: 0.8,
+  roughness: 0.9,
   metalness: 0.6,
 });
 caseMat.color = faceMat.color = new THREE.Color(0x171718);

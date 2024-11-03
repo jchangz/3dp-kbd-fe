@@ -7,7 +7,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { GainMapLoader } from "@monogrid/gainmap-js";
 import { MathUtils } from "three";
 import { Keeb, isValidKeyboardName, isValidKeyboardType, isValidKeyboardVariant } from "./keyboard";
-import { keyLight, spotLight, fillLight } from "./lights";
+import { spotLight, pointLightL, pointLightR } from "./lights";
 import { caseMat, faceMat, keyMat, baseMat, pcbMat, usbMat, floorMat, textureLoader } from "./materials";
 import { getKeyboardData, getSwitchData, getUSBData } from "./utils";
 import { gsap } from "gsap";
@@ -96,7 +96,7 @@ function init() {
     controls.enableDamping = true;
     // controls.autoRotate = true;
     controls.minDistance = 5;
-    controls.enableZoom = false;
+    // controls.enableZoom = false;
     controls.maxDistance = 20;
     controls.addEventListener("change", () => (changed = true));
     controls.enabled = false;
@@ -134,7 +134,10 @@ function init() {
           x: 0,
           y: 6,
           z: 12,
-          ease: "power1.out",
+          ease: "power1.inOut",
+          onUpdate: function () {
+            controls.update();
+          },
           onComplete: function () {
             controls.enabled = true;
           },
@@ -169,10 +172,11 @@ function init() {
 
     // Lighting
 
-    scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.Fog(0x000000, 10, 50);
+    scene.background = new THREE.Color(0x121212);
+    scene.fog = new THREE.Fog(0x121212, 10, 40);
 
-    // scene.add(keyLight);
+    scene.add(pointLightL);
+    scene.add(pointLightR);
     scene.add(spotLight);
 
     const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), floorMat);
