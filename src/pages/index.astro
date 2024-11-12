@@ -9,11 +9,12 @@ const { routes } = json;
 <Layout title="3DPKBD">
   <section class="col-span-12 grid grid-cols-3">
     {
-      routes.map((item) => (
-        <a href={item.slug} class="group">
-          <Img imagePath={item.hero} title={`${item.title} 3D Printed Case`} />
-          <span class="absolute bottom-0 left-0 capitalize group-hover:underline">
-            {item.kbdType.slice(0, 1)}—{item.caseType}
+      routes.map(({ slug, title, hero, kbdType, caseType }) => (
+        <a href={slug} class="group">
+          <Img imagePath={hero} title={`${title} 3D Printed Case`} />
+          <span class="absolute bottom-0 left-0 group-hover:underline">
+            {kbdType.slice(0, 1).toLowerCase()}
+            {caseType}
           </span>
         </a>
       ))
