@@ -1,6 +1,4 @@
 {
-  "keyboards": ["quefrency", "sinc", "kbo"],
-  "types": ["1", "2", "3", "g", "gx", "m"],
   "routes": [
     {
       "title": "Quefrency Type1",

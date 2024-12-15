@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Three from "../components/Three.astro";
-import json from "../assets/routes.json";
+import { routes } from "../assets/routes.json";
 import { config } from "../assets/configurator/settings.json";
 import { options } from "../assets/configurator/options.json";
 
@@ -34,7 +34,6 @@ interface Props {
 }
 
 export async function getStaticPaths() {
-  const { routes } = json;
   const pages = routes.map((route) => {
     return {
       slug: route.slug,

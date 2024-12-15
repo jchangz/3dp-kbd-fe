@@ -1,27 +1,9 @@
 ---
-import json from "../assets/cases.json";
-const { types, keyboards } = json;
+
 ---
 
-<header class="grid grid-cols-12 gap-2">
-  <div class="relative col-span-2 col-start-2">
-    <a href="/" class="fixed font-bold">3DPKBD</a>
+<header class="fixed z-50 grid h-10 w-full bg-[#1b1b1b] xl:text-xl">
+  <div>
+    <a href="/" class="mr-4">3DPKBD</a>
   </div>
-  {
-    keyboards.map((keyboard) => (
-      <div class="col-span-3 flex aspect-[2] flex-col">
-        <h2>{keyboard}</h2>
-        <nav class="grid grid-cols-10 2xl:grid-cols-12">
-          {types.map((type) => (
-            <a
-              class="aspect-square capitalize"
-              href={`type${type}-${keyboard}`}
-            >
-              {type}
-            </a>
-          ))}
-        </nav>
-      </div>
-    ))
-  }
 </header>
