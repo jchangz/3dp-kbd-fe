@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+@theme {
+    --font-mono: "t26-carbon", "monospace";
+    --font-sans: "neue-haas-grotesk-display", "sans-serif";
+}
