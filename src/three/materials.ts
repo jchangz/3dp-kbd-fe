@@ -1,10 +1,10 @@
 import * as THREE from "three";
 
 const envMapRotation = new THREE.Euler(0, -Math.PI / 2, 0);
-const envMapIntensity = 0.5;
+const envMapIntensity = 1;
 
 const caseMat = new THREE.MeshStandardMaterial({
-  roughness: 0.8,
+  roughness: 0.5,
   envMapIntensity: envMapIntensity,
   envMapRotation: envMapRotation,
 });
@@ -15,7 +15,8 @@ const faceMat = new THREE.MeshStandardMaterial({
 });
 const keyMat = new THREE.MeshStandardMaterial({
   color: 0x171718,
-  roughness: 0.5,
+  roughness: 0.7,
+  metalness: 0.5,
   envMapIntensity: envMapIntensity,
   envMapRotation: envMapRotation,
 });
