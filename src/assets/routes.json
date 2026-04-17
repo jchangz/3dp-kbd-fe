@@ -5,7 +5,7 @@
       "slug": "quefrency-type1",
       "kbdType": "quefrency",
       "caseType": "1",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -13,7 +13,7 @@
       "slug": "sinc-type1",
       "kbdType": "sinc",
       "caseType": "1",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -21,7 +21,7 @@
       "slug": "kbo-type1",
       "kbdType": "kbo",
       "caseType": "1",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -29,7 +29,7 @@
       "slug": "quefrency-type2",
       "kbdType": "quefrency",
       "caseType": "2",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -37,7 +37,7 @@
       "slug": "sinc-type2",
       "kbdType": "sinc",
       "caseType": "2",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -45,7 +45,7 @@
       "slug": "kbo-type2",
       "kbdType": "kbo",
       "caseType": "2",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -53,7 +53,7 @@
       "slug": "quefrency-type3",
       "kbdType": "quefrency",
       "caseType": "3",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -61,7 +61,7 @@
       "slug": "sinc-type3",
       "kbdType": "sinc",
       "caseType": "3",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -69,7 +69,7 @@
       "slug": "kbo-type3",
       "kbdType": "kbo",
       "caseType": "3",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -77,7 +77,7 @@
       "slug": "quefrency-typeg",
       "kbdType": "quefrency",
       "caseType": "g",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -85,7 +85,7 @@
       "slug": "sinc-typeg",
       "kbdType": "sinc",
       "caseType": "g",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -93,7 +93,7 @@
       "slug": "kbo-typeg",
       "kbdType": "kbo",
       "caseType": "g",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -101,7 +101,7 @@
       "slug": "quefrency-typegx",
       "kbdType": "quefrency",
       "caseType": "gx",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -109,7 +109,7 @@
       "slug": "sinc-typegx",
       "kbdType": "sinc",
       "caseType": "gx",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -117,7 +117,7 @@
       "slug": "kbo-typegx",
       "kbdType": "kbo",
       "caseType": "gx",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -125,7 +125,7 @@
       "slug": "quefrency-typem",
       "kbdType": "quefrency",
       "caseType": "m",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -133,7 +133,7 @@
       "slug": "sinc-typem",
       "kbdType": "sinc",
       "caseType": "m",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     },
     {
@@ -141,7 +141,7 @@
       "slug": "kbo-typem",
       "kbdType": "kbo",
       "caseType": "m",
-      "hero": "/src/assets/testimg.jpg",
+      "hero": "/src/assets/octane3.webp",
       "alt": ""
     }
   ]
