@@ -87,7 +87,7 @@ function init() {
     // Camera
 
     camera = new THREE.PerspectiveCamera(fov, canvas.offsetWidth / canvas.offsetHeight, 1, 1000);
-    camera.position.set(0, 200, 20);
+    camera.position.set(0, 6, 15);
     setCameraFOV();
 
     // Controls
