@@ -21,8 +21,8 @@ spotLight.castShadow = true;
 spotLight.shadow.camera.near = 3;
 spotLight.shadow.camera.far = 100;
 // spotLight.shadow.mapSize.set( 256, 256 );
-spotLight.shadow.radius = 5
-spotLight.shadow.blurSamples = 25
+spotLight.shadow.radius = 5;
+spotLight.shadow.blurSamples = 25;
 
 // 0x318ce7
 
